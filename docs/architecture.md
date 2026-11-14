@@ -6,7 +6,7 @@ Simulation time is an integer count of deterministic one-minute ticks. The backg
 
 Waiting aircraft are re-evaluated on every tick. Before dispatch, a `std::priority_queue` is rebuilt from current waiting state so changing fuel and age priorities cannot leave stale heap keys. Ordering is: (1) severity-3 emergency arrivals, (2) other emergency arrivals, with least predicted fuel endurance first when two emergency arrivals compete, (3) emergency departures by severity descending, then (4) normal traffic. Normal traffic ages one priority level per 12 minutes of queue wait and reaches the shared second tier after 24 minutes; oldest queue entry wins within an aging tier. Critical arrivals remain strictly first. New emergencies can reorder waiting aircraft, but never displace an aircraft already using the runway.
 
-The runway service durations are two ticks for takeoff and three for landing, followed by one clearing tick. A single `active_` index owns the runway. Queue waiting is service start minus queue entry. Arrival and departure delay are the positive difference between service start and scheduled tick, averaged only over completed flights of the corresponding operation. Utilization is runway service ticks divided by elapsed simulation ticks. Comparisons run each fixed scenario to a 120 or 180 tick horizon with fixed seeds.
+The runway service durations are two ticks for takeoff and three for landing, followed by one clearing tick. A single `active_` index owns the runway. Queue waiting is service start minus queue entry. Arrival and departure delay are the positive difference between service start and scheduled tick, averaged only over completed flights of the corresponding operation. Utilization is runway service ticks divided by elapsed simulation ticks. Comparisons run all three fixed-seed scenarios to the same 180-tick horizon.
 
 ## Built-in generation presets
 
@@ -31,6 +31,7 @@ From a Visual Studio Developer PowerShell configured for x64:
 ```powershell
 cmake -S . -B build-vs18 -G "Visual Studio 18 2026" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:/ENT/vcpkg/scripts/buildsystems/vcpkg.cmake
 cmake --build build-vs18 --config Release
+ctest --test-dir build-vs18 -C Release --output-on-failure
 ./build-vs18/Release/airport-control-tower.exe
 ```
 
@@ -51,3 +52,5 @@ JSON request examples:
 {"operation":"arrival","number":"KC204","aircraft":"A320","fuel":52,"emergency":true,"severity":3}
 {"scenario":"overload"}
 ```
+
+With the server running, `node backend/tests/api_concurrency.mjs` sends 40 concurrent step requests plus concurrent reads and checks the final tick count and runway invariant.
