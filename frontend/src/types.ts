@@ -3,3 +3,4 @@ export type Statistics = { scenario:string; time:number; totalGenerated:number; 
 export type SimState = { time:number; running:boolean; speed:number; scenario:string; runway:string; activeFlights:number; waitingFlights:number; completedFlights:number; emergencyCount:number; statistics:Statistics }
 export type Event = { time:number; type:string; flightId:string; description:string; severity:string }
 export type Comparison = { scenario:string; statistics:Statistics }
+export type GeneratorConfig = { enabled:boolean; arrivalPercent:number; fuelMin:number; fuelMax:number; emergencyPercent:number; trafficInterval:number; seed:number }
