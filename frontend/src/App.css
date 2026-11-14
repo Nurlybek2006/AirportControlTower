@@ -1,6 +1,299 @@
-#root{min-height:100vh}.app-shell{min-height:100vh;background:#08121b;color:#d8e3ec}.sidebar{position:fixed;z-index:5;inset:0 auto 0 0;width:246px;background:#0a151f;border-right:1px solid #1c2b38;display:flex;flex-direction:column;padding:25px 15px 15px}.brand{display:flex;align-items:center;gap:11px;padding:0 8px 24px}.brand-mark{width:34px;height:34px;border:1px solid #34769b;background:#10283a;color:#62c0ef;border-radius:9px;display:grid;place-items:center}.brand strong{display:block;font:800 13px Manrope,sans-serif;letter-spacing:1.3px;color:#f1f7fb}.brand small{display:block;color:#708392;font:9px 'DM Mono',monospace;letter-spacing:1.4px;margin-top:2px}.airport-chip{display:flex;align-items:center;gap:10px;background:#101e2a;border:1px solid #1e303e;border-radius:8px;padding:10px;margin-bottom:27px}.airport-code{font:600 11px 'DM Mono',monospace;color:#72c8ef;background:#102d41;border:1px solid #244a60;border-radius:5px;padding:7px 6px}.airport-chip div{min-width:0;flex:1}.airport-chip b,.airport-chip small{display:block;white-space:nowrap}.airport-chip b{font-size:10px;color:#dce8ef}.airport-chip small{font:9px 'DM Mono',monospace;color:#718492;margin-top:4px}.airport-chip>svg{color:#708392}.nav-label,.section-kicker{font:10px 'DM Mono',monospace;color:#7790a2;letter-spacing:1.3px}.nav-label{padding:0 10px 10px}.sidebar nav{display:grid;gap:4px}.nav-item{position:relative;display:flex;align-items:center;gap:12px;width:100%;padding:10px 11px;border:0;border-radius:6px;background:transparent;text-align:left;color:#95a7b5;font-size:12px;cursor:pointer;transition:.18s}.nav-item:hover{background:#122330;color:#deebf2}.nav-item.selected{background:#122b3b;color:#76ccf5}.nav-item.selected:before{content:'';position:absolute;left:-15px;top:7px;bottom:7px;width:2px;background:#4cb8ee;border-radius:0 2px 2px 0}.nav-icon{width:17px;height:17px;display:grid;place-items:center}.nav-icon svg{width:16px;height:16px;stroke-width:1.8}.nav-item em{margin-left:auto;font:10px 'DM Mono',monospace;font-style:normal;background:#5b2730;color:#ff8a88;padding:2px 6px;border-radius:9px}.sidebar-bottom{margin-top:auto}.weather{padding:12px;border:1px solid #1e303e;border-radius:8px;background:linear-gradient(140deg,#101e29,#101a23);margin-bottom:15px}.weather-title{display:flex;align-items:center;gap:6px;color:#8096a6;font:9px 'DM Mono',monospace;letter-spacing:.8px}.weather-title svg{color:#71bde2}.weather-data{display:flex;align-items:center;gap:11px;margin:12px 0}.weather-data strong{font:500 28px Manrope,sans-serif;color:#e6f1f7}.weather-data span{color:#91a1ad;font-size:10px;line-height:1.6}.visibility{border-top:1px solid #233440;padding-top:9px;display:flex;justify-content:space-between;font:9px 'DM Mono',monospace;color:#728896}.visibility b{color:#c2d1da;font-weight:500}.user-row{display:flex;align-items:center;gap:9px;padding:7px 4px}.avatar,.top-avatar{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#263846;color:#c3d7e3;font:10px 'DM Mono',monospace;border:1px solid #3b5363}.user-row div:nth-child(2){flex:1}.user-row b,.user-row small{display:block}.user-row b{font-size:10px;color:#d9e4ea}.user-row small{font-size:9px;color:#738896;margin-top:3px}.user-row>svg{color:#718493}.main-area{margin-left:246px;min-height:100vh}.topbar{height:58px;position:sticky;top:0;z-index:4;border-bottom:1px solid #1b2a36;background:#0b151fee;backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-between;padding:0 35px}.crumb{font:10px 'DM Mono',monospace;letter-spacing:.75px;color:#708595}.crumb b{color:#b7c7d1;font-weight:500}.slash{color:#3a4d5c;margin:0 10px}.top-actions{display:flex;align-items:center;gap:23px}.clock{padding-right:18px;border-right:1px solid #263642}.clock span,.clock b{display:block}.clock span{font:8px 'DM Mono',monospace;color:#708593;letter-spacing:.8px}.clock b{font:12px 'DM Mono',monospace;color:#e0edf4;margin-top:3px}.conn{display:flex;align-items:center;gap:7px;font:9px 'DM Mono',monospace;color:#8da2af;letter-spacing:.45px}.conn i,.live-tag i,.status-badge i{width:6px;height:6px;border-radius:50%;background:#54d39a;box-shadow:0 0 9px #54d39a88}.conn i.offline{background:#ff6266;box-shadow:0 0 8px #ff626688}.icon-button{width:30px;height:30px;border:1px solid #263845;border-radius:6px;background:#111f2a;display:grid;place-items:center;color:#91a7b5;position:relative;cursor:pointer}.icon-button:hover{border-color:#467a99;color:#d5effb}.icon-button>i{position:absolute;top:5px;right:5px;width:5px;height:5px;background:#f06a66;border-radius:50%}.top-avatar{width:28px;height:28px}.workspace{max-width:1500px;padding:27px 34px 18px;margin:auto;scroll-margin-top:65px}.connection-banner{margin:10px 34px 0;padding:10px 13px;border:1px solid #713b34;border-radius:6px;background:#2b1d1b;color:#ffb59a;font-size:12px;display:flex;align-items:center;gap:8px}.connection-banner button{margin-left:auto;color:#ffc4a8;border:0;background:none;cursor:pointer}.page-heading{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px}.eyebrow{font:9px 'DM Mono',monospace;color:#84a3b5;letter-spacing:1px;display:flex;align-items:center;gap:8px}.pulse-dot{width:6px;height:6px;background:#54d39a;border-radius:50%;box-shadow:0 0 8px #54d39a88}.eyebrow-divider{color:#425766}.page-heading h1{font:600 25px Manrope,sans-serif;letter-spacing:-.6px;margin:10px 0 5px;color:#eaf2f6}.page-heading h1 span{color:#50bdf2}.page-heading p{font-size:11px;color:#8496a3}.heading-actions{display:flex;gap:8px}.button{border:1px solid transparent;border-radius:5px;padding:9px 12px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;transition:.16s}.button:disabled{opacity:.5;cursor:wait}.button.primary{color:#061521;background:#62c3f0;border-color:#6bc7f1}.button.primary:hover{background:#8bd8fb}.button.secondary{color:#b8c7d0;background:#14222d;border-color:#2a3d4a}.button.secondary:hover{border-color:#527d95;background:#192d3a}.button.stop-button{background:#46272a;border-color:#6d393a;color:#ffaba1}.pause-symbol{font-size:15px;line-height:12px}.metric-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:13px}.metric-card{background:linear-gradient(145deg,#101e29,#0e1a24);border:1px solid #1e303d;border-radius:7px;padding:13px 13px 11px;min-width:0}.metric-icon{width:25px;height:25px;display:grid;place-items:center;border-radius:5px;margin-bottom:12px}.metric-icon svg{width:14px;height:14px}.metric-icon.blue{background:#122a3b;color:#60b9eb}.metric-icon.amber{background:#342b1e;color:#e3b964}.metric-icon.green{background:#183128;color:#63d5a0}.metric-icon.cyan{background:#123135;color:#56d0c0}.metric-icon.red{background:#3a2327;color:#f37878}.metric-label{font:8px 'DM Mono',monospace;color:#8496a3;letter-spacing:.75px;white-space:nowrap}.metric-value{display:block;font:600 22px Manrope,sans-serif;color:#e5eef3;margin:5px 0 3px;line-height:1.25}.metric-hint{font-size:9px;color:#718593;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.content-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.85fr);gap:12px;margin-bottom:12px;scroll-margin-top:70px}.panel{background:#0e1a24;border:1px solid #1d303c;border-radius:8px;overflow:hidden;scroll-margin-top:72px}.airport-panel,.queue-panel{min-height:376px}.panel-head{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid #1d2d39;gap:12px;min-height:58px}.panel-head>div:first-child{flex:1}.panel-head h2{font:600 14px Manrope,sans-serif;color:#e0eaf0;margin:5px 0 0;display:flex;align-items:center;gap:8px}.panel-head p{font-size:10px;color:#7f919f;margin:5px 0 0}.count-pill{font:10px 'DM Mono',monospace;color:#a9c0ce;background:#1a2a36;border-radius:10px;padding:2px 7px}.runway-state{display:flex;align-items:center;gap:8px;border:1px solid #294034;background:#11251f;border-radius:5px;padding:6px 9px}.runway-state i{width:6px;height:6px;border-radius:50%;background:#59d49b;box-shadow:0 0 7px #59d49a}.runway-state i.occupied{background:#ef9f54;box-shadow:0 0 7px #ef9f5488}.runway-state b,.runway-state small{display:block}.runway-state b{font:9px 'DM Mono',monospace;color:#a8e2c7}.runway-state small{font-size:8px;color:#7a9387;margin-top:3px}.live-tag{font:8px 'DM Mono',monospace;color:#75ce9f;display:flex;align-items:center;gap:5px}.live-tag i{width:5px;height:5px}.airport-map{height:277px;margin:0 12px;background:#0b1721;border:1px solid #1c2c38;border-radius:5px;position:relative;overflow:hidden}.airport-map svg{width:100%;height:100%}.map-top,.map-bottom{position:absolute;left:11px;right:11px;display:flex;justify-content:space-between;align-items:center;font:8px 'DM Mono',monospace;color:#8094a1;letter-spacing:.35px}.map-top{top:9px}.map-top span:first-child,.wind-info{display:flex;align-items:center;gap:5px}.map-top svg{color:#5cb8df}.map-sep{padding:0 4px;color:#536b7a}.map-bottom{bottom:8px;color:#91a3ad;justify-content:flex-start;gap:15px}.map-bottom>span{display:flex;align-items:center;gap:5px}.map-pin{width:5px;height:5px;border-radius:50%}.map-pin.cyan{background:#54cae8}.map-pin.blue{background:#57aef1}.map-pin.green{background:#54d39a}.map-bottom .wind-info{margin-left:auto;color:#aec0ca}.taxi-dash{fill:none;stroke:#315064;stroke-width:1;stroke-dasharray:5 7}.taxi-line{fill:none;stroke:#273d4d;stroke-width:1.2}.runway-end{fill:#c0d1db;font:9px 'DM Mono',monospace}.runway-label{fill:#c0d1db;font:7px 'DM Mono',monospace;letter-spacing:1px}.zone-label{fill:#6e8a9c;font:8px 'DM Mono',monospace;letter-spacing:1.4px}.plane-mark circle{fill:#102b3c;stroke:#4db3e8;stroke-width:1.2}.plane-mark path{fill:#5dbce9}.plane-mark text{fill:#a3c6d9;font:8px 'DM Mono',monospace}.plane-mark.departure circle{fill:#163326;stroke:#57ca8d}.plane-mark.departure path{fill:#68d4a0}.plane-mark.urgent circle{fill:#462528;stroke:#ff686c;stroke-width:1.7}.plane-mark.urgent path{fill:#ff7775}.active-tag rect{fill:#18382c;stroke:#38775c}.active-tag text{fill:#8fe2b6;font:8px 'DM Mono',monospace}.no-traffic{fill:#687e8e;font:9px 'DM Mono',monospace;letter-spacing:.6px}.map-legend{height:25px;display:flex;align-items:center;gap:13px;padding:0 16px;color:#8495a0;font:8px 'DM Mono',monospace}.map-legend span{display:flex;align-items:center;gap:5px}.map-legend i{width:6px;height:6px;border-radius:50%}.legend-blue{background:#57b7eb}.legend-green{background:#57d19a}.legend-red{background:#fa6f70}.map-legend .map-caption{margin-left:auto;color:#586d7b;font-size:7px;letter-spacing:.45px}.add-flight{margin-left:auto}.queue-filter{display:flex;gap:5px;padding:10px 13px 6px}.queue-filter button{border:1px solid transparent;background:transparent;border-radius:4px;padding:5px 7px;color:#8497a5;font-size:9px;cursor:pointer}.queue-filter button.on{background:#172d3b;color:#81d0f4;border-color:#294a60}.flight-list{padding:0 12px}.flight-row{display:flex;align-items:center;gap:9px;border-bottom:1px solid #1a2a35;padding:9px 2px;min-height:47px}.airline-symbol{width:24px;height:24px;border-radius:5px;display:grid;place-items:center;flex:none;background:#122a3a;color:#69bfeb}.airline-symbol.departure{background:#183126;color:#64d09a}.urgent-row .airline-symbol{background:#432629;color:#fb7a77}.flight-main{flex:1;min-width:0}.flight-main>b{display:block;color:#d7e4eb;font:10px 'DM Mono',monospace}.flight-main small,.fuel-col small,.priority-col small{display:block;font-size:8px;color:#758895;margin-top:3px;white-space:nowrap}.emergency-tag{margin-left:6px;color:#ff8985;background:#482528;padding:2px 4px;font-size:7px;border-radius:3px}.fuel-col,.priority-col{text-align:right;min-width:44px}.fuel-col>b,.priority-col>b{font:9px 'DM Mono',monospace;color:#c4d2da}.fuel-col .low-fuel,.priority-col .priority-high{color:#ff8581}.wait-col{font:9px 'DM Mono',monospace;color:#8ca0ad;min-width:22px;text-align:right}.text-link{width:100%;border:0;background:transparent;padding:10px 15px;text-align:left;font-size:9px;color:#8098a7;cursor:pointer}.text-link span{float:right;color:#65c1eb}.empty-state{padding:26px 12px;text-align:center;font-size:10px;color:#788c9a}.lower-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-bottom:12px}.status-badge{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:4px;font:8px 'DM Mono',monospace;letter-spacing:.5px}.status-badge.good{color:#78d8a7;background:#142b23;border:1px solid #254b39}.status-badge.danger{color:#ff9490;background:#3a2225;border:1px solid #633438}.status-badge.danger i{background:#f16e6d;box-shadow:0 0 6px #f16e6d}.emergency-row{display:flex;align-items:center;gap:10px;padding:10px 15px;border-bottom:1px solid #1a2b35}.emergency-icon{width:27px;height:27px;display:grid;place-items:center;border-radius:5px;background:#3b2527;color:#f47e78}.emergency-info{flex:1}.emergency-info>b{display:block;font:10px 'DM Mono',monospace;color:#e0e9ed}.emergency-info>b small{font-weight:400;color:#8799a4}.emergency-info>span{display:block;font-size:9px;color:#83939d;margin-top:4px}.fuel-meter{width:86px}.fuel-meter>div{display:flex;justify-content:space-between;font:8px 'DM Mono',monospace;color:#778d9a;margin-bottom:5px}.fuel-meter>div b{color:#efb866}.fuel-meter>i,.util-track>i{display:block;height:4px;background:#263743;border-radius:4px;overflow:hidden}.fuel-meter>i b{display:block;height:100%;background:#e4a354;border-radius:4px}.calm-state{min-height:77px;display:flex;align-items:center;justify-content:center;gap:9px;color:#779385;font-size:10px}.calm-state svg{color:#59c891}.policy-note{margin:9px 13px 12px;padding:9px;background:#131f29;border:1px solid #263743;border-radius:5px;display:flex;align-items:flex-start;gap:7px;color:#8295a0;font-size:9px;line-height:1.5}.policy-note svg{color:#65b9df;flex:none}.policy-note b{color:#afc5d1}.mini-period{font:8px 'DM Mono',monospace;color:#8095a3;letter-spacing:.3px}.stat-lines{padding:5px 15px 0}.stat-line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1b2b36;font-size:9px;color:#8799a5}.stat-line b{font:10px 'DM Mono',monospace;color:#c4d2d9;font-weight:500}.stat-line b.red-text{color:#f17b76}.util-track{margin:11px 15px 14px;display:grid;grid-template-columns:1fr auto;gap:7px 8px;align-items:center;font:8px 'DM Mono',monospace;color:#8296a3}.util-track>b{color:#9ad3ee;font-size:9px;font-weight:500}.util-track>i{grid-column:1/-1;height:5px}.util-track>i b{display:block;height:100%;background:linear-gradient(90deg,#3eb3e9,#4ad2c0);border-radius:5px}.analysis-panel{margin-bottom:12px}.analysis-panel>.panel-head{padding:15px 17px}.analysis-panel .panel-head .button{margin-left:auto}.scenario-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:13px 15px}.scenario-card{position:relative;text-align:left;border:1px solid #263743;background:#111f2a;border-radius:6px;padding:10px;cursor:pointer;transition:.16s}.scenario-card:hover,.scenario-card.chosen{border-color:#39779a;background:#132737}.scenario-card>span{display:block;font:8px 'DM Mono',monospace;color:#54b8e8;margin-bottom:7px}.scenario-card>b,.scenario-card>small{display:block}.scenario-card>b{font-size:10px;color:#d5e2e9}.scenario-card>small{font-size:8px;color:#7d909d;margin-top:4px}.scenario-card>svg{position:absolute;right:9px;top:9px;color:#637d8c}.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:1px 17px 14px}.chart-title{font:9px 'DM Mono',monospace;color:#a5b7c2;margin:6px 0}.compare-empty{margin:0 16px 15px;padding:14px;border:1px dashed #2c414e;border-radius:5px;display:flex;align-items:center;justify-content:center;gap:8px;color:#8295a2;font-size:9px}.compare-empty svg{color:#59b8e7}.events-panel{margin-bottom:13px}.event-table{padding:0 15px}.event-header,.event-row{display:grid;grid-template-columns:75px 112px 95px 1fr 58px;gap:8px;align-items:center}.event-header{padding:10px 0 7px;border-bottom:1px solid #273844;color:#788e9c;font:8px 'DM Mono',monospace;letter-spacing:.45px}.event-row{min-height:34px;border-bottom:1px solid #1a2b36;color:#b2c0c8;font-size:9px}.event-row>span:first-child,.event-row>span:nth-child(3){font:9px 'DM Mono',monospace;color:#94aab7}.event-type{color:#c4d2d9}.severity{justify-self:start;border-radius:3px;padding:3px 5px;background:#1c2c37;color:#95a8b4;font:8px 'DM Mono',monospace}.severity.critical{background:#422528;color:#ff8c88}.severity.warning{background:#3c3222;color:#f0c275}.severity.success{background:#193328;color:#76d4a0}.workspace footer{display:flex;align-items:center;gap:13px;border-top:1px solid #1b2b36;padding:13px 2px 4px;color:#758895;font:8px 'DM Mono',monospace;letter-spacing:.35px}.workspace footer>span:first-child{display:flex;align-items:center;gap:6px;color:#93a5b0}.workspace footer>span:first-child svg{color:#66b8dd}.workspace footer>span:nth-child(2){color:#617582}.speed-select{margin-left:auto;display:flex;align-items:center;gap:4px}.speed-select>span{margin-right:4px}.speed-select button{border:1px solid transparent;border-radius:3px;background:transparent;padding:4px 5px;color:#80929d;font:8px 'DM Mono',monospace;cursor:pointer}.speed-select button.selected{border-color:#33556b;background:#142b3a;color:#75caef}.reset-link{border:0;background:transparent;display:flex;align-items:center;gap:4px;color:#82929b;font:8px 'DM Mono',monospace;cursor:pointer}.reset-link:hover{color:#d0e0e9}.toast{position:fixed;right:24px;bottom:22px;z-index:12;padding:11px 15px;border:1px solid #347555;border-radius:6px;background:#122a20;color:#a7e8c3;display:flex;align-items:center;gap:8px;font-size:11px;box-shadow:0 8px 30px #0006}.modal-backdrop{position:fixed;z-index:15;inset:0;background:#03080dcc;display:grid;place-items:center;padding:20px;backdrop-filter:blur(5px)}.flight-modal{width:min(420px,100%);border:1px solid #2c414f;border-radius:9px;background:#101d28;box-shadow:0 25px 80px #0009;padding:18px;display:grid;gap:13px}.modal-head{display:flex;align-items:center;margin-bottom:3px}.modal-head>div{flex:1}.modal-head h2{font:600 16px Manrope,sans-serif;margin:5px 0 0;color:#e0eaf0}.flight-modal label{display:grid;gap:6px;color:#a5b6c0;font-size:10px}.flight-modal input:not([type=checkbox]):not([type=range]),.flight-modal select{width:100%;border:1px solid #2a3d49;background:#0b1720;color:#d8e4eb;border-radius:5px;padding:9px;font-size:11px;outline:none}.flight-modal input:focus,.flight-modal select:focus{border-color:#4b9dc2}.flight-modal input[type=range]{accent-color:#5ebfe9}.form-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.flight-modal .check-label{display:flex;align-items:center;gap:8px}.check-label input{accent-color:#56b8e7}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
-@media(max-width:1200px){.sidebar{width:210px}.main-area{margin-left:210px}.workspace{padding:23px 22px 16px}.metric-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.content-grid{grid-template-columns:minmax(0,1.25fr) minmax(280px,.9fr)}.event-header,.event-row{grid-template-columns:65px 95px 75px 1fr 52px}}
-@media(max-width:900px){.sidebar{width:62px;padding:19px 9px}.brand{padding:0 4px 22px}.brand>div:nth-child(2),.airport-chip>div,.airport-chip>svg,.airport-code,.nav-label,.nav-item:not(.selected){display:none}.airport-chip{justify-content:center;padding:8px 0;background:none;border:0;margin-bottom:17px}.airport-chip:after{content:'ALA';font:9px 'DM Mono',monospace;color:#71c5ec}.sidebar nav{gap:7px}.nav-item,.nav-item.selected{justify-content:center;padding:10px 0;font-size:0}.nav-item.selected:before{left:-9px}.nav-icon{width:18px;height:18px}.nav-item em{position:absolute;right:0;top:1px;font-size:7px;padding:1px 4px}.weather{display:none}.user-row{justify-content:center;padding:6px 0}.user-row div:nth-child(2),.user-row>svg{display:none}.main-area{margin-left:62px}.content-grid{grid-template-columns:1fr}.airport-panel{min-height:365px}.queue-panel{min-height:0}.lower-grid{grid-template-columns:1fr 1fr}.topbar{padding:0 20px}.workspace{padding:22px 18px}.conn span{display:none}}
-@media(max-width:620px){body{min-width:360px}.topbar{height:52px;padding:0 12px}.top-actions{gap:11px}.clock{padding-right:10px}.crumb{font-size:8px}.workspace{padding:19px 11px}.page-heading{align-items:flex-start;gap:12px;flex-direction:column}.page-heading h1{font-size:22px}.heading-actions{width:100%}.heading-actions .button{flex:1}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.metric-card{padding:10px}.metric-value{font-size:20px}.lower-grid{grid-template-columns:1fr}.panel-head{padding:12px}.runway-state{padding:5px}.airport-map{height:235px;margin:0 7px}.airport-panel{min-height:326px}.map-caption{display:none!important}.map-bottom{gap:8px;font-size:7px}.scenario-cards{gap:5px;padding:10px}.scenario-card{padding:8px 6px}.scenario-card>b{font-size:9px}.scenario-card>small{font-size:7px}.analysis-panel>.panel-head{align-items:flex-start}.analysis-panel .panel-head .button{font-size:8px;padding:7px}.chart-grid{grid-template-columns:1fr;gap:7px}.event-table{overflow-x:auto}.event-header,.event-row{min-width:580px}.workspace footer{flex-wrap:wrap;font-size:7px}.workspace footer>span:nth-child(2){display:none}.speed-select{margin-left:auto}.conn{display:none}.airport-code{display:grid}.sidebar{width:52px;padding:16px 7px}.main-area{margin-left:52px}.brand-mark{width:32px;height:32px}.nav-item.selected:before{left:-7px}}
- .plane-mark{transition:transform .55s ease-in-out}
-.event-filter{display:flex;align-items:center;gap:7px;color:#8195a2;font:8px 'DM Mono',monospace;letter-spacing:.5px}.event-filter select{border:1px solid #2a3d49;background:#111e28;color:#b8c8d1;border-radius:4px;padding:5px 7px;font:9px 'DM Sans',sans-serif;cursor:pointer}
+:root{
+  --bg:#07111a;--sidebar:#0a151f;--panel:#0d1923;--panel-raised:#11212d;--panel-hover:#152835;
+  --line:#20333f;--line-strong:#2b414f;--text:#e2edf2;--muted:#91a3ae;--quiet:#71848f;
+  --cyan:#5cc9ee;--cyan-soft:#142f3e;--green:#65c99a;--green-soft:#142e25;
+  --amber:#e4b466;--amber-soft:#332a1d;--red:#ef7c78;--red-soft:#382326;--violet:#aa96e8;
+  --radius:8px;--shadow:0 12px 34px #02080d3d;
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;
+}
+#root{min-height:100vh}
+.app-shell{min-height:100vh;background:var(--bg);color:var(--text)}
+.sidebar{position:fixed;z-index:5;inset:0 auto 0 0;width:248px;padding:20px 16px 16px;background:var(--sidebar);border-right:1px solid #1b2b36;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:12px;padding:3px 6px 20px;color:inherit;text-decoration:none}
+.brand-mark{width:36px;height:36px;display:grid;place-items:center;border:1px solid #356078;border-radius:9px;background:#102635;color:#7bd3f1;box-shadow:inset 0 1px #ffffff0c}
+.brand-copy strong,.brand-copy small{display:block}
+.brand-copy strong{font:650 12px Manrope,'DM Sans',sans-serif;letter-spacing:.05px;color:#eff6f8}
+.brand-copy small{margin-top:4px;font:8px 'DM Mono',monospace;letter-spacing:.75px;color:#82949f}
+.airport-selector{height:58px;display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#0d1b26}
+.airport-code{height:31px;min-width:35px;display:grid;place-items:center;border:1px solid #29475a;border-radius:5px;background:#122d3d;color:#86d5f1;font:500 10px 'DM Mono',monospace}
+.airport-name{flex:1;min-width:0}
+.airport-name strong,.airport-name small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.airport-name strong{font-size:10px;font-weight:600;color:#dce8ee}
+.airport-name small{margin-top:4px;font:8px 'DM Mono',monospace;color:#80939e}
+.airport-selector>svg{color:#8295a0}
+.side-caption,.section-kicker{font:9px 'DM Mono',monospace;letter-spacing:1px;color:#8299a6}
+.side-caption{margin:25px 9px 9px}
+.side-nav{display:grid;gap:3px}
+.nav-item{position:relative;display:flex;align-items:center;gap:11px;width:100%;height:38px;padding:0 10px;border:1px solid transparent;border-radius:6px;background:transparent;color:#9aabb5;text-align:left;font-size:11px;cursor:pointer;transition:background .16s ease,color .16s ease,border-color .16s ease}
+.nav-item>svg{flex:none;color:#8399a5}
+.nav-item:hover{background:#10222e;color:#e2edf2}
+.nav-item.selected{border-color:#1d3d4e;background:#122b3a;color:#8bd9f4}
+.nav-item.selected>svg{color:#77cfef}
+.nav-item.selected:before{position:absolute;left:-17px;top:8px;bottom:8px;width:2px;border-radius:0 2px 2px 0;background:var(--cyan);content:''}
+.nav-item em{margin-left:auto;padding:2px 6px;border-radius:10px;background:#51292c;color:#ffaaa2;font:9px 'DM Mono',monospace;font-style:normal}
+.sidebar-foot{margin-top:auto;padding:12px 8px 0;border-top:1px solid #1b2a35}
+.sidebar-live{display:flex;align-items:center;gap:7px;color:#9cafa9;font-size:9px}
+.sidebar-build{margin-top:9px;color:#637985;font:8px 'DM Mono',monospace;letter-spacing:.35px}
+.sidebar-build span{padding:0 3px;color:#405460}
+.signal-dot{display:inline-block;width:6px;height:6px;flex:none;border-radius:50%;background:#62cf9b;box-shadow:0 0 9px #62cf9b55}
+.main-area{min-height:100vh;margin-left:248px}
+.topbar{position:sticky;z-index:4;top:0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid #1b2b36;background:#09151fee;backdrop-filter:blur(14px)}
+.breadcrumb{display:flex;align-items:center;gap:10px;color:#8295a0;font:9px 'DM Mono',monospace;letter-spacing:.65px}
+.breadcrumb i{color:#405360;font-style:normal}
+.breadcrumb strong{font-weight:500;color:#c2d0d7}
+.topbar-right{display:flex;align-items:center;gap:18px}
+.sim-clock{padding-right:16px;border-right:1px solid #293944}
+.sim-clock span,.sim-clock strong{display:block}
+.sim-clock span{color:#778d99;font:8px 'DM Mono',monospace;letter-spacing:.55px}
+.sim-clock strong{margin-top:3px;color:#e5eef2;font:12px 'DM Mono',monospace}
+.connection-pill{display:flex;align-items:center;gap:7px;color:#9caea9;font:8px 'DM Mono',monospace;letter-spacing:.45px}
+.connection-pill.disconnected{color:#ffaaa0}
+.connection-pill.disconnected .signal-dot{background:var(--red);box-shadow:0 0 8px #ef7c7866;animation:signal-pulse 1.5s infinite}
+.icon-button{position:relative;width:32px;height:32px;display:grid;place-items:center;border:1px solid #293d49;border-radius:6px;background:#10202b;color:#91a6b1;cursor:pointer;transition:.16s ease}
+.icon-button:hover{border-color:#4a778d;color:#d9eff7;background:#142a37}
+.icon-button>i{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--red)}
+.workspace{width:min(100%,1600px);margin:auto;padding:24px 30px 18px;scroll-margin-top:66px}
+.connection-banner{display:flex;align-items:center;gap:9px;margin:12px 30px 0;padding:10px 12px;border:1px solid #693d3d;border-radius:6px;background:#291c20;color:#ffb9ae;font-size:11px}
+.connection-banner span{flex:1}
+.connection-banner button{border:0;background:transparent;color:#ffd1c5;text-decoration:underline;font-size:10px;cursor:pointer}
+.page-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.eyebrow{display:flex;align-items:center;gap:8px;color:#83a0ad;font:8px 'DM Mono',monospace;letter-spacing:.85px}
+.eyebrow i{color:#415460;font-style:normal}
+.page-heading h1{margin:9px 0 4px;color:#eef5f7;font:650 23px Manrope,'DM Sans',sans-serif;letter-spacing:-.45px}
+.page-heading p{color:#90a1aa;font-size:11px}
+.primary-controls{display:flex;gap:8px}
+.button{min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid transparent;border-radius:6px;font-size:10px;font-weight:650;cursor:pointer;transition:transform .15s ease,background .15s ease,border-color .15s ease,opacity .15s ease}
+.button:hover:not(:disabled){transform:translateY(-1px)}
+.button:disabled,.nav-item:disabled{opacity:.54;cursor:wait}
+.primary-button{border-color:#68cbed;background:#65c9eb;color:#071720;box-shadow:0 3px 10px #2c9dc522}
+.primary-button:hover:not(:disabled){background:#84d7f4}
+.quiet-button{border-color:#2c414e;background:#11212c;color:#bdcbd2}
+.quiet-button:hover:not(:disabled){border-color:#4b7183;background:#172c39}
+.pause-button{border-color:#664044;background:#352226;color:#ffb0a6}
+.pause-mark{font-weight:800;font-size:13px;line-height:1}
+.button-spinner{width:13px;height:13px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+.metric-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.metric-card{min-width:0;min-height:121px;padding:12px;border:1px solid #20323e;border-radius:7px;background:linear-gradient(155deg,#101e28,#0d1922);box-shadow:inset 0 1px #ffffff06}
+.metric-icon{width:25px;height:25px;display:grid;place-items:center;margin-bottom:10px;border-radius:5px}
+.metric-icon svg{width:14px;height:14px}
+.metric-icon.cyan{background:#142f3e;color:#6bc9ec}.metric-icon.amber{background:#31291e;color:#e4b466}
+.metric-icon.green{background:#142e25;color:#69c99c}.metric-icon.blue{background:#172c3c;color:#78b9eb}
+.metric-icon.violet{background:#27233a;color:#b3a1ee}.metric-icon.red{background:#382326;color:#f18a84}
+.metric-label{display:block;overflow:hidden;color:#8396a1;font:8px 'DM Mono',monospace;letter-spacing:.55px;text-overflow:ellipsis;white-space:nowrap}
+.metric-value{display:block;margin:4px 0 3px;color:#e7f0f3;font:650 19px Manrope,'DM Sans',sans-serif;letter-spacing:-.3px}
+.metric-hint{display:block;overflow:hidden;color:#7f929d;font-size:8px;text-overflow:ellipsis;white-space:nowrap}
+.operations-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(315px,.86fr);align-items:stretch;gap:12px;margin-bottom:12px}
+.panel{min-width:0;border:1px solid #1f313d;border-radius:8px;background:var(--panel);box-shadow:var(--shadow);scroll-margin-top:70px}
+.airfield-panel,.queue-panel{min-height:424px}
+.panel-heading{min-height:60px;display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid #1d2d38}
+.panel-heading>div:first-child{min-width:0;flex:1}
+.panel-heading h2{display:flex;align-items:center;gap:8px;margin:5px 0 0;color:#e6eef2;font:620 13px Manrope,'DM Sans',sans-serif;letter-spacing:-.1px}
+.panel-heading p{margin:5px 0 0;color:#82949e;font-size:9px}
+.runway-indicator{display:flex;align-items:center;gap:8px;padding:6px 9px;border:1px solid #294338;border-radius:5px;background:#11231e}
+.runway-indicator.is-active{border-color:#684631;background:#2b2119}
+.runway-lamp{width:6px;height:6px;border-radius:50%;background:#69ce9c;box-shadow:0 0 7px #69ce9c77}
+.is-active .runway-lamp{background:#edaa5e;box-shadow:0 0 7px #edaa5e77}
+.runway-indicator strong,.runway-indicator small{display:block;white-space:nowrap}
+.runway-indicator strong{color:#b1e2c8;font:8px 'DM Mono',monospace}
+.is-active .runway-indicator strong{color:#ffd091}
+.runway-indicator small{margin-top:3px;color:#80998a;font-size:8px}
+.live-label{display:flex;align-items:center;gap:5px;color:#8bcda9;font:8px 'DM Mono',monospace}
+.live-label .signal-dot{width:5px;height:5px}
+.airport-visual{padding:10px 12px 9px}
+.airfield-meta{display:flex;justify-content:space-between;gap:8px;padding:0 3px 8px;color:#8498a3;font:8px 'DM Mono',monospace;letter-spacing:.25px}
+.airfield-meta>span{display:flex;align-items:center;gap:6px}
+.airfield-meta svg{color:#79c8e5}
+.airfield-meta i{color:#455967;font-style:normal}
+.map-canvas{position:relative;overflow:hidden;height:307px;border:1px solid #263945;border-radius:6px;background:#09151d}
+.airfield-svg{display:block;width:100%;height:100%;transition:viewBox .2s ease}
+.terminal-block path{fill:#172832;stroke:#38515d;stroke-width:1}
+.terminal-block text{fill:#91a5ae;font:8px 'DM Mono',monospace;letter-spacing:.55px}
+.terminal-block .apron-stand{fill:none;stroke:#49606a;stroke-width:1;stroke-dasharray:3 4}
+.taxiway-outline{fill:none;stroke:#3d4e58;stroke-width:18;stroke-linecap:round}
+.taxiway-center{fill:none;stroke:#d1a95f;stroke-width:1;stroke-dasharray:7 8;opacity:.8}
+.taxi-edge{fill:none;stroke:#556670;stroke-width:2}
+.runway-threshold,.runway-edge-mark{fill:none;stroke:#dce6e9;stroke-width:2}
+.runway-centerline{stroke:#dce6e9;stroke-width:1.5;stroke-dasharray:13 10}
+.runway-light{fill:#83def2;filter:url(#light-glow);opacity:.88}
+.runway-designator{fill:#e7eff1;font:700 13px 'DM Mono',monospace}
+.runway-caption{fill:#b9c9d0;font:700 8px 'DM Mono',monospace;letter-spacing:1px}
+.runway-length{fill:#7d909a;font:7px 'DM Mono',monospace;letter-spacing:.5px}
+.holding-line{fill:none;stroke:#c7a568;stroke-width:1.4}
+.holding-ticks{fill:none;stroke:#d4b978;stroke-width:1.4}
+.holding-area text,.map-labels text{fill:#7f949f;font:8px 'DM Mono',monospace;letter-spacing:.55px}
+.approach-pattern{fill:none;stroke:#59b5d5;stroke-width:1;stroke-dasharray:4 5;opacity:.75}
+.sector-line{stroke:#263a46;stroke-width:1;stroke-dasharray:3 6}
+.aircraft-marker{cursor:pointer;outline:none;transition:transform .72s cubic-bezier(.2,.72,.28,1)}
+.aircraft-marker:focus .marker-halo,.aircraft-marker.selected .marker-halo{stroke:#f0f8fa;stroke-width:1.5;opacity:1}
+.marker-halo{fill:#09151e;stroke:#d2e1e8;stroke-width:1;opacity:.8}
+.aircraft-shape{fill:#76d3f1;stroke:#d1f3fc;stroke-width:.7;stroke-linejoin:round}
+.aircraft-marker.departure .aircraft-shape{fill:#69d0a0;stroke:#d2f6e3}
+.aircraft-marker.emergency .aircraft-shape{fill:#ff7772;stroke:#ffe0d8}
+.emergency-ring{fill:none;stroke:#f07872;stroke-width:1;stroke-dasharray:3 4;animation:ring-rotate 5s linear infinite}
+.emergency-beacon{stroke:#ff837b;stroke-width:1.4;stroke-linecap:round}
+.aircraft-label-bg{fill:#0a1720;stroke:#395362;stroke-width:.75;opacity:.95}
+.aircraft-marker.emergency .aircraft-label-bg{stroke:#b75553}
+.aircraft-label{fill:#dce9ee;font:8px 'DM Mono',monospace;font-weight:600;pointer-events:none}
+.movement-label{fill:#a9dff1;font:7px 'DM Mono',monospace;letter-spacing:.25px}
+.aircraft-marker.emergency .movement-label{fill:#ffaca3}
+.safety-warning rect{fill:#382326;stroke:#e3726d}
+.safety-warning text{fill:#ffb2aa;font:9px 'DM Mono',monospace;letter-spacing:.6px}
+.map-empty{fill:#8497a1;font:10px 'DM Mono',monospace;letter-spacing:.3px}
+.map-controls{position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:3px;padding:4px;border:1px solid #344a57;border-radius:6px;background:#0a151ddf;backdrop-filter:blur(8px)}
+.map-controls button{width:25px;height:24px;display:grid;place-items:center;border:0;border-radius:4px;background:transparent;color:#a9bbc4;cursor:pointer}
+.map-controls button:hover:not(:disabled){background:#1a303c;color:#e8f5f8}
+.map-controls button:disabled{opacity:.4;cursor:default}
+.map-controls span{min-width:35px;text-align:center;color:#90a5b0;font:8px 'DM Mono',monospace}
+.map-legend{display:flex;align-items:center;gap:13px;min-height:28px;padding:2px 4px;color:#94a6af;font:8px 'DM Mono',monospace}
+.map-legend>span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.map-legend i{width:6px;height:6px;border-radius:50%}
+.legend-arrival{background:#69cbed}.legend-departure{background:#68cf9b}.legend-emergency{background:#f07872}.legend-runway{background:#83def2;box-shadow:0 0 5px #83def2}
+.map-legend .map-scale{margin-left:auto;color:#607782;font-size:7px}
+.map-selection{min-height:39px;display:flex;align-items:center;gap:12px;padding:7px 9px;border:1px solid #223743;border-radius:5px;background:#0a161f}
+.selection-hint{flex:1;color:#788d99;font-size:9px}
+.selected-flight-icon{width:28px;height:22px;display:grid;place-items:center;border-radius:4px;font:8px 'DM Mono',monospace}
+.selected-flight-icon.arrival{background:#142d3a;color:#79d1ef}.selected-flight-icon.departure{background:#142c24;color:#75d5a5}
+.selected-flight-main{min-width:100px;flex:1}
+.selected-flight-main strong,.selected-flight-main small{display:block}
+.selected-flight-main strong{color:#e1edf1;font:10px 'DM Mono',monospace}
+.selected-flight-main small{margin-top:3px;color:#80939d;font-size:8px}
+.selected-flight-stat small,.selected-flight-stat strong{display:block}
+.selected-flight-stat small{color:#728691;font:7px 'DM Mono',monospace}
+.selected-flight-stat strong{margin-top:3px;color:#bdcbd1;font:9px 'DM Mono',monospace;text-transform:capitalize}
+.selected-priority{color:#ff9890;font:8px 'DM Mono',monospace}
+.fuel-critical{color:#ff837d!important}
+.map-runway-state{padding:4px 6px;border-radius:4px;font:8px 'DM Mono',monospace;white-space:nowrap}
+.map-runway-state.free{background:#142b22;color:#8bd1a8}.map-runway-state.occupied{background:#33271c;color:#efbf7a}
+.count-badge{padding:2px 7px;border:1px solid #2e4654;border-radius:10px;background:#152733;color:#b7cbd4;font:9px 'DM Mono',monospace}
+.queue-panel{display:flex;flex-direction:column}
+.queue-panel .panel-heading{padding-right:13px}
+.add-flight{color:#75cdec}
+.queue-filters{display:flex;gap:4px;padding:10px 12px 5px}
+.queue-filters button{padding:5px 7px;border:1px solid transparent;border-radius:4px;background:transparent;color:#8799a3;font-size:8px;cursor:pointer}
+.queue-filters button:hover{color:#d6e5ea}
+.queue-filters button.active{border-color:#2c4b5b;background:#142a37;color:#91d9f2}
+.flight-list{padding:0 12px}
+.flight-row{display:flex;align-items:center;gap:8px;min-height:48px;border-bottom:1px solid #1a2b35}
+.operation-icon{width:25px;height:25px;flex:none;display:grid;place-items:center;border-radius:5px;background:#142c39;color:#75cdec}
+.operation-icon.departure{background:#142b23;color:#71d09d}
+.urgent-row .operation-icon{background:#3a2527;color:#f27c78}
+.flight-main{min-width:0;flex:1}
+.flight-main strong{display:block;overflow:hidden;color:#dce8ed;font:600 9px 'DM Mono',monospace;text-overflow:ellipsis;white-space:nowrap}
+.flight-main small,.fuel-cell small,.priority-cell small,.wait-cell small{display:block;margin-top:3px;color:#7e919b;font-size:8px;white-space:nowrap}
+.flight-main em{margin-left:6px;padding:2px 4px;border-radius:3px;background:#46272a;color:#ff9a92;font:7px 'DM Mono',monospace;font-style:normal}
+.fuel-cell,.priority-cell{text-align:right;min-width:43px}
+.fuel-cell strong,.priority-cell b{color:#cbd8de;font:9px 'DM Mono',monospace;font-weight:500}
+.priority-cell b.priority-emergency{color:#ff9189}
+.wait-cell{min-width:24px;color:#bac9d0;text-align:right;font:9px 'DM Mono',monospace}
+.wait-cell small{font-size:7px}
+.queue-foot{display:flex;justify-content:space-between;gap:8px;margin-top:auto;padding:10px 14px;border-top:1px solid #1c2d37;color:#748893;font-size:8px}
+.queue-foot span:last-child{color:#89a4b2;font-family:'DM Mono',monospace}
+.lower-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+.state-badge{display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid;border-radius:4px;font:8px 'DM Mono',monospace}
+.state-badge.clear{border-color:#28513d;background:#14291f;color:#8bd5a9}
+.state-badge.critical{border-color:#693638;background:#382226;color:#ff9b92}
+.state-badge.critical .signal-dot{background:#f07872;box-shadow:0 0 7px #f0787277}
+.emergency-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #1a2a34}
+.emergency-symbol{width:28px;height:28px;display:grid;place-items:center;border-radius:5px;background:#3b2528;color:#f1837b}
+.emergency-copy{flex:1;min-width:0}
+.emergency-copy strong{display:block;color:#e1e9ed;font:600 9px 'DM Mono',monospace}
+.emergency-copy strong small{margin-left:7px;color:#8799a2;font-weight:400}
+.emergency-copy>span{display:block;margin-top:4px;color:#8b9ca4;font-size:8px}
+.fuel-gauge{width:80px}
+.fuel-gauge>span{display:flex;justify-content:space-between;margin-bottom:4px;color:#8698a0;font:8px 'DM Mono',monospace}
+.fuel-gauge>span b{color:#e3ba78;font-weight:500}
+.fuel-gauge>i{display:block;height:4px;overflow:hidden;border-radius:4px;background:#283640}
+.fuel-gauge>i b{display:block;height:100%;border-radius:4px;background:#d9a75e}
+.calm-state{min-height:78px;display:flex;align-items:center;justify-content:center;gap:9px;color:#8fa99a;font-size:10px}
+.calm-state svg{color:#67c899}
+.policy-note{display:flex;align-items:flex-start;gap:8px;margin:10px 13px;padding:9px;border:1px solid #273b47;border-radius:5px;background:#111f29;color:#8c9da6;font-size:8px;line-height:1.55}
+.policy-note svg{flex:none;color:#77bdd9}.policy-note strong{color:#bfd0d7}
+.text-action{display:flex;align-items:center;gap:5px;margin:0 13px 11px;padding:5px 0;border:0;background:transparent;color:#79c9e8;font-size:9px;cursor:pointer}
+.text-action:hover{color:#b3eafb}
+.live-small{color:#8397a2;font:8px 'DM Mono',monospace}
+.stat-list{padding:3px 15px 0}
+.stat-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #1b2a34;color:#92a2ab;font-size:9px}
+.stat-row strong{color:#cfdae0;font:9px 'DM Mono',monospace;font-weight:500}
+.stat-row .stat-alert{color:#ff817a}
+.utilization-row{display:flex;justify-content:space-between;margin:11px 15px 6px;color:#82949d;font:8px 'DM Mono',monospace}
+.utilization-row strong{color:#9edcf0;font-weight:500}
+.utilization-track{height:5px;margin:0 15px 14px;overflow:hidden;border-radius:4px;background:#26353f}
+.utilization-track span{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#47b5d8,#63d0bd);transition:width .35s ease}
+.analysis-panel{margin-bottom:12px}
+.analysis-heading{min-height:71px}
+.analysis-heading .button{flex:none}
+.scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px 14px}
+.scenario-card{min-width:0;min-height:63px;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #293c48;border-radius:6px;background:#101f29;color:#dce8ed;text-align:left;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease}
+.scenario-card:hover:not(:disabled){transform:translateY(-1px);border-color:#47758a;background:#142936}
+.scenario-card.current{border-color:#39718a;background:#122936}
+.scenario-card:disabled{opacity:.55;cursor:wait}
+.scenario-index{align-self:flex-start;padding-top:2px;color:#63c7e8;font:9px 'DM Mono',monospace}
+.scenario-copy{min-width:0;flex:1}
+.scenario-copy strong,.scenario-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scenario-copy strong{color:#dce8ed;font-size:9px;font-weight:650}
+.scenario-copy small{margin-top:5px;color:#8699a2;font-size:8px}
+.scenario-card>svg{flex:none;color:#79919d}
+.charts-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 14px 14px}
+.chart-card{min-width:0;padding:10px 9px 5px;border:1px solid #22343f;border-radius:6px;background:#0b1720}
+.chart-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 4px}
+.chart-heading strong{overflow:hidden;color:#c7d4da;font-size:9px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
+.chart-heading span{color:#788d98;font:8px 'DM Mono',monospace}
+.chart-legend{display:flex;flex-wrap:wrap;gap:10px;padding:0 4px 6px;color:#8d9ea7;font-size:8px}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.chart-legend i{width:6px;height:6px;border-radius:2px}
+.chart-loading,.analysis-empty{min-height:67px;display:flex;align-items:center;justify-content:center;gap:8px;margin:0 14px 14px;padding:12px;border:1px dashed #2a3e49;border-radius:5px;color:#8598a2;font-size:9px}
+.analysis-empty svg{color:#64c4e6}
+.events-panel{margin-bottom:12px}
+.event-filter{display:flex;align-items:center;gap:7px;color:#81949e;font:8px 'DM Mono',monospace}
+.event-filter select{height:27px;padding:0 8px;border:1px solid #2a3d49;border-radius:4px;background:#101e28;color:#c5d2d8;font:9px 'DM Sans',sans-serif}
+.event-table{padding:0 14px 8px;overflow-x:auto}
+.event-header,.event-row{min-width:580px;display:grid;grid-template-columns:78px 115px 94px minmax(160px,1fr) 60px;align-items:center;gap:8px}
+.event-header{min-height:31px;border-bottom:1px solid #293a45;color:#778c97;font:7px 'DM Mono',monospace;letter-spacing:.5px}
+.event-row{min-height:34px;border-bottom:1px solid #1b2b35;color:#bac8cf;font-size:8px}
+.event-row>span:first-child,.event-row>span:nth-child(3){color:#92a6af;font:8px 'DM Mono',monospace}
+.event-row>span:nth-child(4){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.severity{justify-self:start;padding:3px 5px;border-radius:3px;background:#1c2d37;color:#91a4ad;font:7px 'DM Mono',monospace;font-weight:500}
+.severity.critical{background:#432628;color:#ff9b93}.severity.warning{background:#3b3021;color:#eac47d}.severity.success{background:#173127;color:#80d3a3}
+.empty-state{padding:27px 10px;text-align:center;color:#899ba4;font-size:9px}
+.event-empty{padding:25px}
+.workspace-footer{display:flex;align-items:center;gap:14px;padding:12px 2px 3px;border-top:1px solid #1b2b35;color:#788c96;font:8px 'DM Mono',monospace;letter-spacing:.25px}
+.workspace-footer>span{display:flex;align-items:center;gap:6px;color:#99aab2}
+.workspace-footer>span i{color:#495c67;font-style:normal}
+.workspace-footer>span svg{color:#77c9e6}
+.speed-controls{display:flex;align-items:center;gap:4px;margin-left:auto}
+.speed-controls>span{margin-right:4px;color:#82949e}
+.speed-controls button{padding:5px 6px;border:1px solid transparent;border-radius:4px;background:transparent;color:#92a3ac;font:8px 'DM Mono',monospace;cursor:pointer}
+.speed-controls button:hover:not(:disabled){color:#e4f1f5}
+.speed-controls button.selected{border-color:#35566a;background:#142b38;color:#8bd9f1}
+.reset-button{display:flex;align-items:center;gap:5px;padding:5px 3px;border:0;background:transparent;color:#91a1a9;font:8px 'DM Mono',monospace;cursor:pointer}
+.reset-button:hover:not(:disabled){color:#e3eef2}
+.reset-button:disabled,.speed-controls button:disabled{opacity:.5;cursor:wait}
+.toast{position:fixed;z-index:12;right:22px;bottom:20px;display:flex;align-items:center;gap:8px;padding:11px 14px;border:1px solid #347458;border-radius:6px;background:#12291f;color:#b5e9c8;box-shadow:var(--shadow);font-size:10px}
+.toast svg{color:#6ed19e}
+.modal-backdrop{position:fixed;z-index:20;inset:0;display:grid;place-items:center;padding:20px;background:#03080dd9;backdrop-filter:blur(5px)}
+.modal-card{width:min(440px,100%);display:grid;gap:14px;padding:19px;border:1px solid #304653;border-radius:9px;background:#101d27;box-shadow:0 24px 80px #0009}
+.modal-heading{display:flex;align-items:center;margin-bottom:2px}
+.modal-heading>div{flex:1}
+.modal-heading h2{margin:5px 0 0;color:#e4eef2;font:620 16px Manrope,'DM Sans',sans-serif}
+.modal-card label{display:grid;gap:6px;color:#aebdc5;font-size:9px}
+.modal-card input:not([type=checkbox]):not([type=range]),.modal-card select{width:100%;height:34px;padding:0 9px;border:1px solid #2e424e;border-radius:5px;outline:none;background:#0b1720;color:#dce7ec;font-size:10px}
+.modal-card input:focus,.modal-card select:focus{border-color:#5bb8d9;box-shadow:0 0 0 2px #5bb8d91a}
+.modal-card input[type=range]{width:100%;accent-color:#58c6e8}
+.form-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.range-label{grid-template-columns:1fr auto!important}
+.range-label input{grid-column:1/-1}
+.range-label strong{color:#85d4ed;font:9px 'DM Mono',monospace}
+.modal-card .checkbox-label{display:flex;align-items:center;gap:8px}
+.checkbox-label input{accent-color:#5cc8e8}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:3px}
+.split-actions{justify-content:space-between}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #66c9ec;outline-offset:2px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes signal-pulse{50%{opacity:.35}}
+@keyframes ring-rotate{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media(max-width:1320px){.metric-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.operations-grid{grid-template-columns:minmax(0,1.45fr) minmax(300px,.9fr)}.workspace{padding-right:22px;padding-left:22px}.topbar{padding-right:22px;padding-left:22px}}
+@media(max-width:1050px){.sidebar{width:68px;padding:18px 9px}.brand{justify-content:center;padding:2px 0 19px}.brand-copy,.airport-name,.airport-selector>svg,.side-caption,.nav-item span,.nav-item em,.sidebar-foot{display:none}.airport-selector{justify-content:center;height:auto;padding:8px 0;border:0;background:transparent}.airport-code{min-width:37px}.side-nav{gap:6px}.nav-item{justify-content:center;padding:0}.nav-item.selected:before{left:-9px}.nav-item>svg{width:17px;height:17px}.main-area{margin-left:68px}.operations-grid{grid-template-columns:1fr}.queue-panel{min-height:0}.flight-list{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}.queue-foot{margin-top:0}.lower-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.topbar{height:52px;padding:0 14px}.topbar-right{gap:10px}.connection-pill{font-size:0}.connection-pill .signal-dot{width:7px;height:7px}.sim-clock{padding-right:10px}.workspace{padding:18px 12px}.page-heading{align-items:flex-start;flex-direction:column;margin-bottom:14px}.page-heading h1{font-size:21px}.primary-controls{width:100%}.primary-controls .button{flex:1}.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.metric-card{min-height:112px;padding:10px}.metric-value{font-size:18px}.map-canvas{height:265px}.airfield-meta{font-size:7px}.map-selection{flex-wrap:wrap;gap:8px}.selected-flight-main{min-width:90px}.map-scale{display:none!important}.flight-list{grid-template-columns:1fr}.lower-grid{grid-template-columns:1fr}.scenario-grid{grid-template-columns:1fr}.scenario-card{min-height:52px}.charts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analysis-heading{align-items:flex-start}.analysis-heading .button{padding:0 8px;font-size:8px}.workspace-footer{flex-wrap:wrap;gap:9px}.workspace-footer>span{font-size:7px}.speed-controls{margin-left:auto}.workspace-footer>span:nth-child(1){max-width:190px}.workspace-footer>span:nth-child(1){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+@media(max-width:460px){.sidebar{width:52px;padding:15px 6px}.main-area{margin-left:52px}.brand-mark{width:32px;height:32px}.nav-item.selected:before{left:-6px}.topbar{padding:0 9px}.breadcrumb{font-size:7px;gap:6px}.connection-pill{display:none}.workspace{padding-right:9px;padding-left:9px}.runway-indicator{padding:5px 6px}.runway-indicator small{font-size:7px}.live-label{display:none}.panel-heading{padding-right:10px;padding-left:10px}.map-canvas{height:225px}.map-legend{gap:8px;font-size:7px}.map-legend .map-scale{display:none}.charts-grid{grid-template-columns:1fr}.event-filter{font-size:7px}.workspace-footer>span{max-width:135px}.workspace-footer>span:nth-child(1){font-size:6px}.reset-button{font-size:7px}}

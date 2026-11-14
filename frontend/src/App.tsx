@@ -1,54 +1,503 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
-import { Activity, AlertTriangle, ArrowDownLeft, ArrowUpRight, BarChart3, Bell, Check, ChevronDown, CircleHelp, Clock3, Gauge, Plane, Play, Plus, Radio, RotateCcw, ShieldAlert, SlidersHorizontal, StepForward, TowerControl, Wind, X } from 'lucide-react'
+import {
+  Activity, AlertTriangle, ArrowDownLeft, ArrowUpRight, BarChart3, Bell, Check,
+  ChevronDown, Clock3, Gauge, Plane, Play, Plus, Radio, RotateCcw,
+  ShieldAlert, SlidersHorizontal, StepForward, TowerControl, X,
+} from 'lucide-react'
 import { api } from './services/api'
 import type { Comparison, Event, Flight, GeneratorConfig, SimState } from './types'
+import AirportMap from './components/AirportMap'
 import './App.css'
 
-const nav=[['Overview','overview'],['Live Airport','airport'],['Flight Queue','queue'],['Emergency Control','emergencies'],['Scenario Analysis','analysis'],['Event Logs','events'],['Settings','settings']] as const
-const ScenarioChart=lazy(()=>import('./components/ScenarioChart'))
-const initial:SimState={time:0,running:false,speed:1,scenario:'normal',runway:'FREE',activeFlights:0,waitingFlights:0,completedFlights:0,emergencyCount:0,statistics:{scenario:'normal',time:0,totalGenerated:0,completed:0,completedArrivals:0,completedDepartures:0,emergencyHandled:0,averageWait:0,averageDepartureDelay:0,averageArrivalDelay:0,averageServiceDelay:0,maxWait:0,queueLength:0,maxQueueLength:0,runwayUtilization:0,diverted:0,pending:0}}
-const fmtTime=(n:number)=>`T+${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`
-const cap=(s:string)=>s.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase())
-
-function App(){
- const [state,setState]=useState<SimState>(initial),[flights,setFlights]=useState<Flight[]>([]),[events,setEvents]=useState<Event[]>([]),[comparison,setComparison]=useState<Comparison[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState(false),[activeNav,setActiveNav]=useState('Overview'),[showForm,setShowForm]=useState(false),[showGenerator,setShowGenerator]=useState(false),[filter,setFilter]=useState('all'),[eventFilter,setEventFilter]=useState('all'),[notice,setNotice]=useState('')
- const [generator,setGenerator]=useState<GeneratorConfig>({enabled:false,arrivalPercent:50,fuelMin:40,fuelMax:100,emergencyPercent:5,trafficInterval:4,seed:731})
- const refresh=useCallback(async()=>{try{const [s,f,e]=await Promise.all([api.state(),api.flights(),api.events()]);setState(s);setFlights(f);setEvents(e);setError('');setLoading(false)}catch(e){setError(e instanceof Error?e.message:'Could not connect to API');setLoading(false)}},[])
- useEffect(()=>{const initialSync=window.setTimeout(()=>{void refresh();void api.generator().then(setGenerator).catch(()=>{})},0);const t=window.setInterval(()=>void refresh(),800);return()=>{window.clearTimeout(initialSync);window.clearInterval(t)}},[refresh])
- const act=async(fn:()=>Promise<unknown>,message?:string)=>{setBusy(true);try{await fn();await refresh();if(message){setNotice(message);window.setTimeout(()=>setNotice(''),2600)}}catch(e){setError(e instanceof Error?e.message:'Action failed')}finally{setBusy(false)}}
- const jump=(label:string,id:string)=>{setActiveNav(label);document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
- const pending=flights.filter(f=>['queued','approaching','ready'].includes(f.status)), emergencies=flights.filter(f=>f.emergency),active=flights.filter(f=>['landing','taking_off'].includes(f.status))[0],visibleEvents=events.filter(e=>eventFilter==='all'||e.severity===eventFilter)
- const shown=pending.filter(f=>filter==='all'||(filter==='emergency'?f.emergency:f.operation===filter))
- const graph=useMemo(()=>comparison.map(x=>({scenario:x.statistics.scenario==='normal'?'Normal':x.statistics.scenario==='heavy'?'Heavy':'Emergency',delay:x.statistics.averageServiceDelay,wait:x.statistics.averageWait,util:x.statistics.runwayUtilization,queue:x.statistics.maxQueueLength})),[comparison])
- const runCompare=()=>void act(async()=>{setComparison(await api.compare())},'Scenario comparison complete')
-
- return <div className="app-shell">
-  <aside className="sidebar"><div className="brand"><div className="brand-mark"><TowerControl size={19}/></div><div><strong>SKYLINE</strong><small>CONTROL SYSTEMS</small></div></div>
-   <div className="airport-chip"><span className="airport-code">ALA</span><div><b>Almaty International</b><small>UAAA · Kazakhstan</small></div><ChevronDown size={14}/></div>
-   <div className="nav-label">OPERATIONS</div><nav>{nav.map(([name,id],i)=><button key={id} className={`nav-item ${activeNav===name?'selected':''}`} onClick={()=>id==='settings'?(setActiveNav(name),setShowGenerator(true)):jump(name,id)}><span className="nav-icon">{[<Activity/>,<TowerControl/>,<Plane/>,<ShieldAlert/>,<BarChart3/>,<Radio/>,<SlidersHorizontal/>][i]}</span>{name}{name==='Emergency Control'&&emergencies.length>0&&<em>{emergencies.length}</em>}</button>)}</nav>
-   <div className="sidebar-bottom"><div className="weather"><div className="weather-title"><Wind size={14}/> LOCAL CONDITIONS</div><div className="weather-data"><strong>18°</strong><span>Clear skies<br/>Wind 6 kt · 310°</span></div><div className="visibility"><span>VISIBILITY</span><b>10 km</b></div></div><div className="user-row"><div className="avatar">AS</div><div><b>Airside Supervisor</b><small>Operations desk 04</small></div><CircleHelp size={16}/></div></div>
-  </aside>
-  <main className="main-area"><header className="topbar"><div className="crumb"><span>OPERATIONS</span><span className="slash">/</span><b>{activeNav.toUpperCase()}</b></div><div className="top-actions"><div className="clock"><span>SIMULATION TIME</span><b>{fmtTime(state.time)}</b></div><div className="conn"><i className={error?'offline':''}/><span>{error?'API OFFLINE':'LIVE CONNECTION'}</span></div><button className="icon-button" aria-label="View emergency notifications" title="View emergency notifications" onClick={()=>jump('Emergency Control','emergencies')}><Bell size={17}/>{emergencies.length>0&&<i/>}</button><div className="top-avatar">AS</div></div></header>
-  {error&&<div className="connection-banner"><AlertTriangle size={15}/>{error}<button onClick={()=>void refresh()}>Retry</button></div>}
-  <div className="workspace" id="overview"><section className="page-heading"><div><div className="eyebrow"><span className="pulse-dot"/> AIR TRAFFIC MANAGEMENT <span className="eyebrow-divider">/</span> {state.scenario.toUpperCase()} SCENARIO</div><h1>Good evening, controller<span>.</span></h1><p>Here’s the operational picture at Almaty International Airport.</p></div><div className="heading-actions"><button className="button secondary" onClick={()=>void act(()=>api.control('step'),'Advanced one simulation tick')} disabled={busy}><StepForward size={15}/> Step</button><button className={`button ${state.running?'stop-button':'primary'}`} onClick={()=>void act(()=>api.control(state.running?'pause':state.time>0?'resume':'start'),state.running?'Simulation paused':state.time>0?'Simulation resumed':'Simulation started')} disabled={busy}>{state.running?<><span className="pause-symbol">Ⅱ</span> Pause simulation</>:<><Play size={14} fill="currentColor"/> {state.time>0?'Resume simulation':'Start simulation'}</>}</button></div></section>
-   <section className="metric-grid"><Metric icon={<Plane/>} label="ACTIVE FLIGHTS" value={state.activeFlights} hint="On final or runway" tone="blue"/><Metric icon={<Clock3/>} label="IN THE QUEUE" value={state.waitingFlights} hint={`${state.statistics.maxQueueLength} peak queue`} tone="amber"/><Metric icon={<Check/>} label="COMPLETED" value={state.completedFlights} hint={`${state.statistics.totalGenerated} scheduled`} tone="green"/><Metric icon={<Gauge/>} label="AVERAGE DELAY" value={`${state.statistics.averageServiceDelay.toFixed(1)}m`} hint={`${state.statistics.averageWait.toFixed(1)}m avg. queue wait`} tone="blue"/><Metric icon={<Activity/>} label="RUNWAY UTILIZATION" value={`${state.statistics.runwayUtilization.toFixed(0)}%`} hint="Current session" tone="cyan"/><Metric icon={<ShieldAlert/>} label="EMERGENCIES" value={state.emergencyCount} hint="Awaiting priority handling" tone="red"/></section>
-   <section className="content-grid"><div className="panel airport-panel" id="airport"><div className="panel-head"><div><div className="section-kicker">LIVE AIRFIELD</div><h2>Airport surface</h2></div><div className="runway-state"><i className={state.runway==='FREE'?'free':'occupied'}/><div><b>{state.runway==='FREE'?'RUNWAY CLEAR':state.runway.replace('OCCUPIED_','ACTIVE · ')}</b><small>{active?`${active.number} · ${active.operation.toUpperCase()}`:'Single runway · 06 / 24'}</small></div></div><div className="live-tag"><i/> LIVE</div></div>
-    <Airport flights={flights} active={active}/><div className="map-legend"><span><i className="legend-blue"/> Arrival</span><span><i className="legend-green"/> Departure</span><span><i className="legend-red"/> Emergency</span><span className="map-caption">AIRFIELD SIMULATION · STATE SYNCHRONIZED</span></div>
-   </div>
-   <div className="panel queue-panel" id="queue"><div className="panel-head"><div><div className="section-kicker">PRIORITY SCHEDULING</div><h2>Flight queue <span className="count-pill">{pending.length}</span></h2></div><button className="icon-button add-flight" title="Add a manual flight" onClick={()=>setShowForm(true)}><Plus size={18}/></button></div><div className="queue-filter">{['all','arrival','departure','emergency'].map(k=><button key={k} className={filter===k?'on':''} onClick={()=>setFilter(k)}>{k==='all'?'All traffic':cap(k)}</button>)}</div><div className="flight-list">{shown.slice(0,6).map(f=><FlightRow key={f.id} flight={f} time={state.time}/>)}{shown.length===0&&<div className="empty-state">{loading?'Loading live flights…':'No flights match this view.'}</div>}</div><button className="text-link" onClick={()=>jump('Flight Queue','queue')}>Showing {Math.min(6,shown.length)} of {shown.length} waiting flights <span>→</span></button></div></section>
-   <section className="lower-grid"><div className="panel emergency-panel" id="emergencies"><div className="panel-head"><div><div className="section-kicker">PRIORITY WATCH</div><h2>Emergency control</h2></div><span className={`status-badge ${emergencies.length?'danger':'good'}`}><i/>{emergencies.length?`${emergencies.length} ACTIVE`:'ALL CLEAR'}</span></div>{emergencies.slice(0,3).map(f=><div className="emergency-row" key={f.id}><div className="emergency-icon"><AlertTriangle size={16}/></div><div className="emergency-info"><b>{f.number} <small>{f.aircraft}</small></b><span>{f.operation==='arrival'?'Inbound':'Outbound'} · Severity {f.severity} · {Math.floor(f.fuel)}% fuel</span></div><div className="fuel-meter"><div><span>FUEL</span><b>{Math.floor(f.fuel)}%</b></div><i><b style={{width:`${Math.max(2,Math.min(f.fuel,100))}%`}}/></i></div></div>)}{emergencies.length===0&&<div className="calm-state"><ShieldAlert size={21}/><span>No active emergencies. Priority monitoring is on.</span></div>}<div className="policy-note"><ShieldAlert size={14}/><span><b>Priority policy</b> · Critical arrivals → emergency arrivals (lowest endurance first) → emergency departures → aged normal traffic.</span></div></div>
-    <div className="panel stats-panel"><div className="panel-head"><div><div className="section-kicker">SESSION PERFORMANCE</div><h2>Operational statistics</h2></div><span className="mini-period">LIVE · {fmtTime(state.time)}</span></div><div className="stat-lines"><Stat label="Completed arrivals" value={state.statistics.completedArrivals}/><Stat label="Completed departures" value={state.statistics.completedDepartures}/><Stat label="Average arrival delay" value={`${state.statistics.averageArrivalDelay.toFixed(1)} min`}/><Stat label="Average departure delay" value={`${state.statistics.averageDepartureDelay.toFixed(1)} min`}/><Stat label="Maximum wait" value={`${state.statistics.maxWait} min`}/><Stat label="Diverted flights" value={state.statistics.diverted} alert/></div><div className="util-track"><span>RUNWAY SERVICE UTILIZATION</span><b>{state.statistics.runwayUtilization.toFixed(1)}%</b><i><b style={{width:`${state.statistics.runwayUtilization}%`}}/></i></div></div></section>
-   <section className="panel analysis-panel" id="analysis"><div className="panel-head"><div><div className="section-kicker">DECISION SUPPORT</div><h2>Scenario analysis</h2><p>Compare fixed-seed scenarios across a common horizon.</p></div><button className="button secondary" onClick={runCompare} disabled={busy}><BarChart3 size={15}/>{comparison.length?'Re-run comparison':'Run comparison'}</button></div><div className="scenario-cards">{[['normal','01','Normal operations','Light traffic · 180 min'],['heavy','02','Heavy traffic','High volume · 180 min'],['overload','03','Emergency overload','Urgent arrivals · 180 min']].map(([id,n,title,sub])=><button key={id} className={`scenario-card ${state.scenario===id?'chosen':''}`} onClick={()=>void act(async()=>{await api.loadScenario(id);await api.control('start')},`${title} started`)}><span>{n}</span><b>{title}</b><small>{sub}</small><ArrowUpRight size={14}/></button>)}</div>{graph.length>0?<Suspense fallback={<div className="compare-empty">Preparing scenario charts…</div>}><div className="chart-grid"><ScenarioChart title="Average service delay" data={graph} dataKey="delay" unit="min" color="#54b8ff"/><ScenarioChart title="Average queue wait" data={graph} dataKey="wait" unit="min" color="#41d6bf"/><ScenarioChart title="Runway utilization" data={graph} dataKey="util" unit="%" color="#ad88ff"/></div></Suspense>:<div className="compare-empty"><BarChart3 size={18}/><span>Run comparison to view delay, waiting time and runway utilization across all three scenarios.</span></div>}</section>
-   <section className="panel events-panel" id="events"><div className="panel-head"><div><div className="section-kicker">SYSTEM ACTIVITY</div><h2>Event log</h2></div><label className="event-filter">FILTER<select value={eventFilter} onChange={e=>setEventFilter(e.target.value)}><option value="all">All severities</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="success">Success</option><option value="info">Info</option></select></label><span className="mini-period">SHOWING {Math.min(visibleEvents.length,8)} / {visibleEvents.length}</span></div><div className="event-table"><div className="event-header"><span>TIME</span><span>TYPE</span><span>FLIGHT</span><span>EVENT DESCRIPTION</span><span>SEVERITY</span></div>{visibleEvents.slice(0,8).map((e,i)=><div className="event-row" key={`${e.time}-${e.flightId}-${e.type}-${i}`}><span>{fmtTime(e.time)}</span><span className="event-type">{cap(e.type)}</span><span>{e.flightId||'—'}</span><span>{e.description}</span><span className={`severity ${e.severity}`}>{e.severity}</span></div>)}{visibleEvents.length===0&&<div className="empty-state">{events.length?'No events match this filter.':'Events will appear here as the simulation advances.'}</div>}</div></section>
-   <footer><span><TowerControl size={14}/> SKYLINE CONTROL SYSTEMS</span><span>DETERMINISTIC SIMULATION · C++20 ENGINE</span><div id="settings" className="speed-select"><span>SIM SPEED</span>{[1,2,5,10].map(n=><button key={n} className={state.speed===n?'selected':''} onClick={()=>void act(()=>api.speed(n),`Simulation speed set to ${n}×`)}>{n}×</button>)}</div><button className="reset-link" onClick={()=>void act(()=>api.control('reset'),'Simulation reset')}><RotateCcw size={13}/> Reset</button></footer>
-  </div></main>{notice&&<div className="toast"><Check size={15}/>{notice}</div>}{showForm&&<FlightModal onClose={()=>setShowForm(false)} onSave={async form=>{await act(()=>api.createFlight(form),'Manual flight queued');setShowForm(false)}}/>}{showGenerator&&<GeneratorModal config={generator} onClose={()=>setShowGenerator(false)} onSave={async next=>{await act(async()=>setGenerator(await api.configureGenerator(next)),'Generator settings saved')}} onGenerate={async()=>{await act(()=>api.randomFlight(),'Random flight generated')}}/>}
- </div>
+const ScenarioChart = lazy(() => import('./components/ScenarioChart'))
+const navigation = [
+  { label: 'Overview', id: 'overview', icon: Activity },
+  { label: 'Live airport', id: 'airport', icon: TowerControl },
+  { label: 'Flight queue', id: 'queue', icon: Plane },
+  { label: 'Emergency control', id: 'emergencies', icon: ShieldAlert },
+  { label: 'Scenario analysis', id: 'analysis', icon: BarChart3 },
+  { label: 'Event log', id: 'events', icon: Radio },
+] as const
+const initialState: SimState = {
+  time: 0, running: false, speed: 1, scenario: 'normal', runway: 'FREE',
+  activeFlights: 0, waitingFlights: 0, completedFlights: 0, emergencyCount: 0,
+  statistics: {
+    scenario: 'normal', time: 0, totalGenerated: 0, completed: 0, completedArrivals: 0,
+    completedDepartures: 0, emergencyHandled: 0, averageWait: 0,
+    averageDepartureDelay: 0, averageArrivalDelay: 0, averageServiceDelay: 0,
+    maxWait: 0, queueLength: 0, maxQueueLength: 0, runwayUtilization: 0,
+    diverted: 0, pending: 0,
+  },
 }
-function Metric({icon,label,value,hint,tone}:{icon:React.ReactNode;label:string;value:string|number;hint:string;tone:string}){return <motion.div className="metric-card" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}}><div className={`metric-icon ${tone}`}>{icon}</div><div className="metric-label">{label}</div><strong className="metric-value">{value}</strong><div className="metric-hint">{hint}</div></motion.div>}
-function Airport({flights,active}:{flights:Flight[];active?:Flight}){const positions=flights.map((f,i)=>{let x=90+(i%5)*52,y=95+Math.floor(i/5)*32;if(f.status==='approaching'){x=610-(i%3)*28;y=58+(i%3)*18}else if(f.status==='ready'||f.status==='queued'){x=110+(i%5)*48;y=256+(i%2)*24}else if(f.status==='landing'){x=340;y=155}else if(f.status==='taking_off'){x=410;y=155}return{x,y,f}});return <div className="airport-map"><div className="map-top"><span><Radio size={12}/> UAAA · ALMATY AIRPORT</span><span>2,238 M AMSL <span className="map-sep">·</span> UTC +05:00</span></div><svg viewBox="0 0 720 320" role="img" aria-label="Live airport movement simulation"><defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#20364a" strokeWidth=".6" opacity=".5"/></pattern><linearGradient id="runway" x2="0" y2="1"><stop stopColor="#273643"/><stop offset="1" stopColor="#1c2935"/></linearGradient></defs><rect width="720" height="320" fill="url(#grid)"/><path d="M0 177H720M360 0V320" className="taxi-dash"/><path d="M0 110H720M0 230H720" className="taxi-line"/><path d="M90 230 Q130 176 190 177 M530 177 Q590 177 630 230" className="taxi-line"/><rect x="247" y="135" width="226" height="43" rx="5" fill="url(#runway)" stroke="#516478"/><path d="M265 156h188" stroke="#dce8ed" strokeWidth="1.5" strokeDasharray="13 9"/><path d="M258 142v29m-5-24 5-5 5 5m-5 19v-10m204-14v29m-5-24 5-5 5 5m-5 19v-10" stroke="#9baab4" fill="none" strokeWidth="1.2"/><text x="260" y="128" className="runway-end">06</text><text x="446" y="128" className="runway-end">24</text><text x="334" y="164" className="runway-label">SINGLE ACTIVE RUNWAY</text><text x="24" y="55" className="zone-label">FINAL APPROACH</text><text x="24" y="285" className="zone-label">HOLDING · TAXI</text><path d="M26 68H680" stroke="#397eac" strokeWidth=".7" strokeDasharray="3 5" opacity=".55"/><path d="M26 252H680" stroke="#397eac" strokeWidth=".7" strokeDasharray="3 5" opacity=".4"/>{positions.map(({x,y,f})=><g key={f.id} transform={`translate(${x} ${y})`} className={`plane-mark ${f.operation} ${f.emergency?'urgent':''}`}><circle r="12"/><path d="M0-6L2 2 0 5-2 2Z"/><text x="15" y="3">{f.number}</text></g>)}{!flights.length&&<text x="360" y="212" textAnchor="middle" className="no-traffic">FLIGHTS WILL APPEAR WHEN THE SIMULATION IS LOADED</text>}{active&&<g className="active-tag"><rect x="294" y="186" width="132" height="19" rx="4"/><text x="360" y="199" textAnchor="middle">{active.number} · {active.status.toUpperCase()}</text></g>}</svg><div className="map-bottom"><span><span className="map-pin cyan"/> HOLDING PATTERN</span><span><span className="map-pin blue"/> FINAL APPROACH</span><span><span className="map-pin green"/> TAXIWAY</span><span className="wind-info"><Wind size={12}/> 310° / 06 KT</span></div></div>}
-function FlightRow({flight:f,time}:{flight:Flight;time:number}){return <div className={`flight-row ${f.emergency?'urgent-row':''}`}><div className={`airline-symbol ${f.operation}`}>{f.operation==='arrival'?<ArrowDownLeft size={14}/>:<ArrowUpRight size={14}/>}</div><div className="flight-main"><b>{f.number}{f.emergency&&<span className="emergency-tag">EMERGENCY</span>}</b><small>{f.airline} · {f.aircraft}</small></div><div className="fuel-col"><b className={f.fuel<20?'low-fuel':''}>{Math.floor(f.fuel)}%</b><small>FUEL</small></div><div className="priority-col"><b className={f.emergency?'priority-high':''}>{f.emergency?`P${4-f.severity}`:'Normal'}</b><small>{f.status.replace('_',' ')}</small></div><div className="wait-col">{Math.max(0,time-f.queueEntered)}m</div></div>}
-function Stat({label,value,alert=false}:{label:string;value:string|number;alert?:boolean}){return <div className="stat-line"><span>{label}</span><b className={alert&&value!=='0'?'red-text':''}>{value}</b></div>}
-function FlightModal({onClose,onSave}:{onClose:()=>void;onSave:(f:{operation:string;number:string;aircraft:string;fuel:number;emergency:boolean;severity:number})=>Promise<void>}){const [number,setNumber]=useState(''),[operation,setOperation]=useState('arrival'),[aircraft,setAircraft]=useState('A320'),[fuel,setFuel]=useState(65),[emergency,setEmergency]=useState(false),[severity,setSeverity]=useState(2),[saving,setSaving]=useState(false);return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}><form className="flight-modal" onSubmit={async e=>{e.preventDefault();setSaving(true);await onSave({number,operation,aircraft,fuel,emergency,severity});setSaving(false)}}><div className="modal-head"><div><div className="section-kicker">MANUAL DISPATCH</div><h2>Register a flight</h2></div><button type="button" className="icon-button" onClick={onClose}><X size={17}/></button></div><label>Flight number<input required value={number} onChange={e=>setNumber(e.target.value.toUpperCase())} placeholder="e.g. KC204"/></label><div className="form-two"><label>Operation<select value={operation} onChange={e=>setOperation(e.target.value)}><option value="arrival">Arrival</option><option value="departure">Departure</option></select></label><label>Aircraft<select value={aircraft} onChange={e=>setAircraft(e.target.value)}><option>A320</option><option>B738</option><option>E190</option></select></label></div><label>Fuel level · {fuel}%<input type="range" min="1" max="100" value={fuel} onChange={e=>setFuel(Number(e.target.value))}/></label><label className="check-label"><input type="checkbox" checked={emergency} onChange={e=>setEmergency(e.target.checked)}/> Declare emergency</label>{emergency&&<label>Severity<select value={severity} onChange={e=>setSeverity(Number(e.target.value))}><option value="1">1 · Low</option><option value="2">2 · High</option><option value="3">3 · Critical</option></select></label>}<div className="modal-actions"><button type="button" className="button secondary" onClick={onClose}>Cancel</button><button className="button primary" disabled={saving}><Plus size={14}/>{saving?'Adding…':'Add to queue'}</button></div></form></div>}
-function GeneratorModal({config,onClose,onSave,onGenerate}:{config:GeneratorConfig;onClose:()=>void;onSave:(c:GeneratorConfig)=>Promise<void>;onGenerate:()=>Promise<void>}){const [draft,setDraft]=useState(config),[saving,setSaving]=useState(false);const edit=(patch:Partial<GeneratorConfig>)=>setDraft(v=>({...v,...patch}));return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}><div className="flight-modal"><div className="modal-head"><div><div className="section-kicker">TRAFFIC CONFIGURATION</div><h2>Flight generator</h2></div><button className="icon-button" onClick={onClose}><X size={17}/></button></div><label className="check-label"><input type="checkbox" checked={draft.enabled} onChange={e=>edit({enabled:e.target.checked})}/> Enable automatic flight generation</label><div className="form-two"><label>Arrival share · {draft.arrivalPercent}%<input type="range" min="0" max="100" value={draft.arrivalPercent} onChange={e=>edit({arrivalPercent:Number(e.target.value)})}/></label><label>Emergency chance · {draft.emergencyPercent}%<input type="range" min="0" max="100" value={draft.emergencyPercent} onChange={e=>edit({emergencyPercent:Number(e.target.value)})}/></label></div><div className="form-two"><label>Fuel minimum<input type="number" min="1" max={draft.fuelMax} value={draft.fuelMin} onChange={e=>edit({fuelMin:Number(e.target.value)})}/></label><label>Fuel maximum<input type="number" min={draft.fuelMin} max="100" value={draft.fuelMax} onChange={e=>edit({fuelMax:Number(e.target.value)})}/></label></div><div className="form-two"><label>Generation interval · ticks<input type="number" min="1" max="60" value={draft.trafficInterval} onChange={e=>edit({trafficInterval:Number(e.target.value)})}/></label><label>Deterministic seed<input type="number" min="0" value={draft.seed} onChange={e=>edit({seed:Number(e.target.value)})}/></label></div><div className="modal-actions"><button type="button" className="button secondary" onClick={()=>void onGenerate()}><Radio size={14}/> Generate random flight</button><button className="button primary" disabled={saving} onClick={async()=>{setSaving(true);await onSave(draft);setSaving(false)}}><Check size={14}/>{saving?'Saving…':'Apply settings'}</button></div></div></div>}
+const initialGenerator: GeneratorConfig = {
+  enabled: false, arrivalPercent: 50, fuelMin: 40, fuelMax: 100,
+  emergencyPercent: 5, trafficInterval: 4, seed: 731,
+}
+const scenarioLabels: Record<string, string> = {
+  normal: 'Normal operations', heavy: 'Heavy traffic', overload: 'Emergency overload',
+}
+const formatSimTime = (minutes: number) =>
+  'T+' + String(Math.floor(minutes / 60)).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0')
+const titleCase = (value: string) =>
+  value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+const queueWait = (flight: Flight, time: number) => Math.max(0, (flight.serviceStart >= 0 ? flight.serviceStart : time) - flight.queueEntered)
+
+function App() {
+  const [simulation, setSimulation] = useState(initialState)
+  const [flights, setFlights] = useState<Flight[]>([])
+  const [events, setEvents] = useState<Event[]>([])
+  const [comparison, setComparison] = useState<Comparison[]>([])
+  const [generator, setGenerator] = useState(initialGenerator)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [busyAction, setBusyAction] = useState('')
+  const [activeNav, setActiveNav] = useState('overview')
+  const [queueFilter, setQueueFilter] = useState('all')
+  const [eventFilter, setEventFilter] = useState('all')
+  const [showFlightForm, setShowFlightForm] = useState(false)
+  const [showGenerator, setShowGenerator] = useState(false)
+  const [notice, setNotice] = useState('')
+  const polling = useRef(false)
+  const noticeTimer = useRef<number | undefined>(undefined)
+
+  const refresh = useCallback(async () => {
+    if (polling.current) return
+    polling.current = true
+    try {
+      const [nextState, nextFlights, nextEvents, nextGenerator] = await Promise.all([
+        api.state(), api.flights(), api.events(), api.generator(),
+      ])
+      setSimulation(nextState)
+      setFlights(nextFlights)
+      setEvents(nextEvents)
+      setGenerator(nextGenerator)
+      setError('')
+      setLoading(false)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Backend connection failed')
+      setLoading(false)
+    } finally {
+      polling.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const first = window.setTimeout(() => { void refresh() }, 0)
+    const interval = window.setInterval(() => { void refresh() }, 900)
+    return () => { window.clearTimeout(first); window.clearInterval(interval) }
+  }, [refresh])
+
+  useEffect(() => () => window.clearTimeout(noticeTimer.current), [])
+
+  const runAction = async (name: string, operation: () => Promise<unknown>, success?: string) => {
+    setBusyAction(name)
+    try {
+      await operation()
+      await refresh()
+      setError('')
+      if (success) {
+        setNotice(success)
+        window.clearTimeout(noticeTimer.current)
+        noticeTimer.current = window.setTimeout(() => setNotice(''), 2800)
+      }
+      return true
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'The requested action failed')
+      return false
+    } finally {
+      setBusyAction('')
+    }
+  }
+
+  const jumpTo = (item: typeof navigation[number]) => {
+    setActiveNav(item.id)
+    document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const activeFlight = flights.find((flight) => flight.status === 'landing' || flight.status === 'taking_off')
+  const waitingFlights = flights.filter((flight) => ['queued', 'approaching', 'ready', 'scheduled'].includes(flight.status))
+  const emergencies = flights.filter((flight) => flight.emergency)
+  const visibleQueue = waitingFlights.filter((flight) =>
+    queueFilter === 'all' || (queueFilter === 'emergency' ? flight.emergency : flight.operation === queueFilter),
+  )
+  const visibleEvents = events.filter((event) => eventFilter === 'all' || event.severity === eventFilter)
+  const chartData = useMemo(() => comparison.map(({ statistics }) => ({
+    scenario: scenarioLabels[statistics.scenario] ?? titleCase(statistics.scenario),
+    wait: statistics.averageWait,
+    arrivalDelay: statistics.averageArrivalDelay,
+    departureDelay: statistics.averageDepartureDelay,
+    completed: statistics.completed,
+    maxQueue: statistics.maxQueueLength,
+    emergencies: statistics.emergencyHandled,
+    utilization: statistics.runwayUtilization,
+  })), [comparison])
+
+  const compareScenarios = () => runAction(
+    'compare', async () => setComparison(await api.compare()), 'Scenario comparison is ready',
+  )
+  const loadAndStart = (scenario: string) => runAction('scenario', async () => {
+    await api.loadScenario(scenario)
+    await api.control('start')
+  }, (scenarioLabels[scenario] ?? 'Scenario') + ' started')
+
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <a className="brand" href="#overview" onClick={() => setActiveNav('overview')}>
+          <span className="brand-mark"><TowerControl size={19} strokeWidth={1.8} /></span>
+          <span className="brand-copy"><strong>Airport Control Tower</strong><small>SIMULATION · LIVE OPERATIONS</small></span>
+        </a>
+        <div className="airport-selector">
+          <span className="airport-code">APT</span>
+          <span className="airport-name"><strong>Simulation Airport</strong><small>Single runway · A / B</small></span>
+          <ChevronDown size={14} aria-hidden="true" />
+        </div>
+        <div className="side-caption">OPERATIONS</div>
+        <nav className="side-nav" aria-label="Operations sections">
+          {navigation.map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                type="button"
+                key={item.id}
+                className={'nav-item' + (activeNav === item.id ? ' selected' : '')}
+                aria-current={activeNav === item.id ? 'page' : undefined}
+                onClick={() => jumpTo(item)}
+              >
+                <Icon size={16} strokeWidth={1.8} />
+                <span>{item.label}</span>
+                {item.id === 'emergencies' && emergencies.length > 0 && <em>{emergencies.length}</em>}
+              </button>
+            )
+          })}
+          <button type="button" className="nav-item" onClick={() => setShowGenerator(true)}>
+            <SlidersHorizontal size={16} strokeWidth={1.8} /><span>Settings</span>
+          </button>
+        </nav>
+        <div className="sidebar-foot">
+          <div className="sidebar-live"><span className="signal-dot" /> Simulation services online</div>
+          <div className="sidebar-build">C++20 ENGINE <span>·</span> REST LINK ACTIVE</div>
+        </div>
+      </aside>
+
+      <main className="main-area">
+        <header className="topbar">
+          <div className="breadcrumb"><span>OPERATIONS</span><i>/</i><strong>{navigation.find((item) => item.id === activeNav)?.label.toUpperCase() ?? 'SETTINGS'}</strong></div>
+          <div className="topbar-right">
+            <div className="sim-clock"><span>SIMULATION TIME</span><strong>{formatSimTime(simulation.time)}</strong></div>
+            <div className={'connection-pill' + (error ? ' disconnected' : '')} role="status">
+              <span className="signal-dot" />{error ? 'RECONNECTING' : 'LIVE API'}
+            </div>
+            <button type="button" className="icon-button" aria-label="View emergency control" onClick={() => jumpTo(navigation[3])}>
+              <Bell size={17} />{emergencies.length > 0 && <i />}
+            </button>
+          </div>
+        </header>
+
+        {error && (
+          <div className="connection-banner" role="alert">
+            <AlertTriangle size={16} /><span>{error}</span>
+            <button type="button" onClick={() => { setError(''); void refresh() }}>Retry connection</button>
+          </div>
+        )}
+
+        <div className="workspace" id="overview">
+          <section className="page-heading">
+            <div>
+              <div className="eyebrow"><span className="signal-dot" /> AIR TRAFFIC MANAGEMENT <i>/</i> {titleCase(simulation.scenario).toUpperCase()}</div>
+              <h1>Operations overview</h1>
+              <p>Live runway status, flight sequencing and operational performance.</p>
+            </div>
+            <div className="primary-controls" aria-label="Simulation controls">
+              <button type="button" className="button quiet-button" disabled={!!busyAction} onClick={() => void runAction('step', () => api.control('step'), 'Advanced one simulation minute')}>
+                <StepForward size={15} /> Step
+              </button>
+              <button
+                type="button"
+                className={'button ' + (simulation.running ? 'pause-button' : 'primary-button')}
+                disabled={!!busyAction}
+                onClick={() => void runAction('simulation', () => api.control(simulation.running ? 'pause' : simulation.time > 0 ? 'resume' : 'start'), simulation.running ? 'Simulation paused' : simulation.time > 0 ? 'Simulation resumed' : 'Simulation started')}
+              >
+                {busyAction === 'simulation' ? <span className="button-spinner" /> : simulation.running ? <span className="pause-mark">Ⅱ</span> : <Play size={14} fill="currentColor" />}
+                {busyAction === 'simulation' ? 'Updating…' : simulation.running ? 'Pause simulation' : simulation.time > 0 ? 'Resume simulation' : 'Start simulation'}
+              </button>
+            </div>
+          </section>
+
+          <section className="metric-grid" aria-label="Live operational metrics">
+            <MetricCard icon={<Plane />} label="RUNWAY MOVEMENT" value={simulation.activeFlights} hint={activeFlight ? activeFlight.number + ' · ' + titleCase(activeFlight.operation) : 'No active operation'} tone="cyan" />
+            <MetricCard icon={<Clock3 />} label="WAITING IN QUEUE" value={simulation.waitingFlights} hint={'Peak queue ' + simulation.statistics.maxQueueLength} tone="amber" />
+            <MetricCard icon={<Check />} label="COMPLETED" value={simulation.completedFlights} hint={simulation.statistics.totalGenerated + ' flights generated'} tone="green" />
+            <MetricCard icon={<Activity />} label="AVERAGE QUEUE WAIT" value={simulation.statistics.averageWait.toFixed(1) + ' min'} hint={'Maximum current wait ' + simulation.statistics.maxWait + ' min'} tone="blue" />
+            <MetricCard icon={<Gauge />} label="RUNWAY UTILIZATION" value={simulation.statistics.runwayUtilization.toFixed(1) + '%'} hint="Service time / elapsed time" tone="violet" />
+            <MetricCard icon={<ShieldAlert />} label="PRIORITY WATCH" value={simulation.emergencyCount} hint={simulation.statistics.emergencyHandled + ' emergencies handled'} tone="red" />
+          </section>
+
+          <section className="operations-grid">
+            <div className="panel airfield-panel" id="airport">
+              <div className="panel-heading">
+                <div><span className="section-kicker">LIVE AIRFIELD</span><h2>Airport surface</h2></div>
+                <div className={'runway-indicator ' + (simulation.runway === 'FREE' ? 'is-free' : 'is-active')}>
+                  <span className="runway-lamp" />
+                  <span><strong>{simulation.runway === 'FREE' ? 'RUNWAY AVAILABLE' : titleCase(simulation.runway.replace('OCCUPIED_', '').replace('_', ' '))}</strong><small>{activeFlight ? activeFlight.number + ' · ' + activeFlight.operation.toUpperCase() : 'Runway A / B'}</small></span>
+                </div>
+                <div className="live-label"><span className="signal-dot" /> LIVE</div>
+              </div>
+              <AirportMap flights={flights} simulationTime={simulation.time} runway={simulation.runway} loading={loading} />
+            </div>
+
+            <div className="panel queue-panel" id="queue">
+              <div className="panel-heading">
+                <div><span className="section-kicker">PRIORITY SEQUENCING</span><h2>Flight queue <span className="count-badge">{waitingFlights.length}</span></h2></div>
+                <button type="button" className="icon-button add-flight" aria-label="Create a flight" title="Create a flight" onClick={() => setShowFlightForm(true)}><Plus size={18} /></button>
+              </div>
+              <div className="queue-filters" role="group" aria-label="Filter flight queue">
+                {['all', 'arrival', 'departure', 'emergency'].map((filter) => (
+                  <button type="button" key={filter} className={queueFilter === filter ? 'active' : ''} aria-pressed={queueFilter === filter} onClick={() => setQueueFilter(filter)}>
+                    {filter === 'all' ? 'All traffic' : titleCase(filter)}
+                  </button>
+                ))}
+              </div>
+              <div className="flight-list" aria-live="polite">
+                {visibleQueue.slice(0, 7).map((flight) => <FlightRow key={flight.id} flight={flight} time={simulation.time} />)}
+                {visibleQueue.length === 0 && <div className="empty-state">{loading ? 'Loading flight data…' : 'No flights in this queue filter.'}</div>}
+              </div>
+              <div className="queue-foot"><span>Showing {Math.min(visibleQueue.length, 7)} of {visibleQueue.length} waiting flights</span><span>FIFO + priority aging</span></div>
+            </div>
+          </section>
+
+          <section className="lower-grid">
+            <div className="panel emergency-panel" id="emergencies">
+              <div className="panel-heading">
+                <div><span className="section-kicker">SAFETY & PRIORITY</span><h2>Emergency control</h2></div>
+                <span className={'state-badge ' + (emergencies.length ? 'critical' : 'clear')}><span className="signal-dot" />{emergencies.length ? emergencies.length + ' ACTIVE' : 'ALL CLEAR'}</span>
+              </div>
+              <div className="emergency-list">
+                {emergencies.slice(0, 4).map((flight) => <EmergencyRow key={flight.id} flight={flight} />)}
+                {emergencies.length === 0 && <div className="calm-state"><ShieldAlert size={19} /><span>No active emergencies. Priority monitoring is on.</span></div>}
+              </div>
+              <div className="policy-note"><ShieldAlert size={15} /><span><strong>Dispatch policy</strong> · Critical arrivals first; then emergency arrivals by least endurance, emergency departures by severity, and aged normal traffic.</span></div>
+              <button type="button" className="text-action" onClick={() => setShowFlightForm(true)}><Plus size={14} /> Create an emergency flight</button>
+            </div>
+
+            <div className="panel session-panel">
+              <div className="panel-heading"><div><span className="section-kicker">SESSION PERFORMANCE</span><h2>Operational statistics</h2></div><span className="live-small">{formatSimTime(simulation.time)}</span></div>
+              <div className="stat-list">
+                <StatRow label="Completed arrivals" value={simulation.statistics.completedArrivals} />
+                <StatRow label="Completed departures" value={simulation.statistics.completedDepartures} />
+                <StatRow label="Average arrival delay" value={simulation.statistics.averageArrivalDelay.toFixed(1) + ' min'} />
+                <StatRow label="Average departure delay" value={simulation.statistics.averageDepartureDelay.toFixed(1) + ' min'} />
+                <StatRow label="Maximum queue wait" value={simulation.statistics.maxWait + ' min'} />
+                <StatRow label="Diverted flights" value={simulation.statistics.diverted} alert={simulation.statistics.diverted > 0} />
+                <StatRow label="Emergency flights handled" value={simulation.statistics.emergencyHandled} />
+              </div>
+              <div className="utilization-row"><span>RUNWAY SERVICE UTILIZATION</span><strong>{simulation.statistics.runwayUtilization.toFixed(1)}%</strong></div>
+              <div className="utilization-track" aria-label={'Runway utilization ' + simulation.statistics.runwayUtilization.toFixed(1) + ' percent'}><span style={{ width: Math.max(0, Math.min(100, simulation.statistics.runwayUtilization)) + '%' }} /></div>
+            </div>
+          </section>
+
+          <section className="panel analysis-panel" id="analysis">
+            <div className="panel-heading analysis-heading">
+              <div><span className="section-kicker">DETERMINISTIC DECISION SUPPORT</span><h2>Scenario comparison</h2><p>Fixed seeds · shared 180-minute horizon · C++-calculated results</p></div>
+              <button type="button" className="button quiet-button" disabled={!!busyAction} onClick={() => void compareScenarios()}>
+                {busyAction === 'compare' ? <span className="button-spinner" /> : <BarChart3 size={15} />}
+                {busyAction === 'compare' ? 'Comparing…' : comparison.length ? 'Re-run comparison' : 'Compare scenarios'}
+              </button>
+            </div>
+            <div className="scenario-grid">
+              {[
+                { id: 'normal', index: '01', title: 'Normal operations', note: 'Low traffic · 14 flights · seed 731' },
+                { id: 'heavy', index: '02', title: 'Heavy traffic', note: 'Dense traffic · 30 flights · seed 1942' },
+                { id: 'overload', index: '03', title: 'Emergency overload', note: 'Urgent arrivals · 24 flights · seed 5813' },
+              ].map((scenario) => (
+                <button type="button" key={scenario.id} className={'scenario-card' + (simulation.scenario === scenario.id ? ' current' : '')} disabled={!!busyAction} onClick={() => void loadAndStart(scenario.id)}>
+                  <span className="scenario-index">{scenario.index}</span><span className="scenario-copy"><strong>{scenario.title}</strong><small>{scenario.note}</small></span><Play size={14} />
+                </button>
+              ))}
+            </div>
+            {comparison.length > 0 ? (
+              <Suspense fallback={<div className="chart-loading">Loading comparison charts…</div>}>
+                <div className="charts-grid">
+                  <ScenarioChart title="Average queue wait" unit="min" data={chartData} series={[{ key: 'wait', label: 'Queue wait', color: '#58c7ef' }]} />
+                  <ScenarioChart title="Average arrival & departure delay" unit="min" data={chartData} series={[{ key: 'arrivalDelay', label: 'Arrival', color: '#58c7ef' }, { key: 'departureDelay', label: 'Departure', color: '#d9a957' }]} />
+                  <ScenarioChart title="Completed flights" unit="flights" data={chartData} series={[{ key: 'completed', label: 'Completed', color: '#63c99b' }]} />
+                  <ScenarioChart title="Maximum queue length" unit="flights" data={chartData} series={[{ key: 'maxQueue', label: 'Peak queue', color: '#d9a957' }]} />
+                  <ScenarioChart title="Emergency flights handled" unit="flights" data={chartData} series={[{ key: 'emergencies', label: 'Handled', color: '#f07872' }]} />
+                  <ScenarioChart title="Runway utilization" unit="%" data={chartData} series={[{ key: 'utilization', label: 'Utilization', color: '#a991e8' }]} />
+                </div>
+              </Suspense>
+            ) : (
+              <div className="analysis-empty"><BarChart3 size={18} /><span>Run the comparison to see waiting time, delay, throughput, emergency handling and runway use.</span></div>
+            )}
+          </section>
+
+          <section className="panel events-panel" id="events">
+            <div className="panel-heading">
+              <div><span className="section-kicker">AUDIT TRAIL</span><h2>Event log</h2></div>
+              <label className="event-filter">SEVERITY
+                <select value={eventFilter} onChange={(event) => setEventFilter(event.target.value)}>
+                  <option value="all">All events</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="success">Success</option><option value="info">Info</option>
+                </select>
+              </label>
+              <span className="live-small">{visibleEvents.length} RECORDS</span>
+            </div>
+            <EventTable events={visibleEvents.slice(0, 10)} allEvents={events.length} loading={loading} />
+          </section>
+
+          <footer className="workspace-footer">
+            <span><TowerControl size={14} /> AIRPORT CONTROL TOWER <i>·</i> C++20 SIMULATION ENGINE</span>
+            <div className="speed-controls" aria-label="Simulation speed">
+              <span>SPEED</span>
+              {[1, 2, 5, 10].map((speed) => (
+                <button type="button" key={speed} className={simulation.speed === speed ? 'selected' : ''} aria-pressed={simulation.speed === speed} disabled={!!busyAction} onClick={() => void runAction('speed', () => api.speed(speed), 'Simulation speed set to ' + speed + '×')}>{speed}×</button>
+              ))}
+            </div>
+            <button type="button" className="reset-button" disabled={!!busyAction} onClick={() => void runAction('reset', () => api.control('reset'), 'Simulation reset')}><RotateCcw size={13} /> Reset</button>
+          </footer>
+        </div>
+      </main>
+
+      {notice && <div className="toast" role="status" aria-live="polite"><Check size={15} />{notice}</div>}
+      {showFlightForm && (
+        <FlightModal
+          busy={busyAction === 'flight'}
+          onClose={() => setShowFlightForm(false)}
+          onSave={async (form) => {
+            const saved = await runAction('flight', () => api.createFlight(form), form.emergency ? 'Emergency flight queued' : 'Flight added to queue')
+            if (saved) setShowFlightForm(false)
+            return saved
+          }}
+        />
+      )}
+      {showGenerator && (
+        <GeneratorModal
+          config={generator}
+          busy={busyAction === 'generator'}
+          onClose={() => setShowGenerator(false)}
+          onGenerate={async () => runAction('generator', () => api.randomFlight(), 'Random flight generated')}
+          onSave={async (next) => runAction('generator', async () => setGenerator(await api.configureGenerator(next)), 'Generator settings saved')}
+        />
+      )}
+    </div>
+  )
+}
+
+function MetricCard({ icon, label, value, hint, tone }: { icon: React.ReactNode; label: string; value: string | number; hint: string; tone: string }) {
+  return (
+    <motion.article className="metric-card" initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }}>
+      <div className={'metric-icon ' + tone}>{icon}</div><span className="metric-label">{label}</span>
+      <strong className="metric-value">{value}</strong><span className="metric-hint">{hint}</span>
+    </motion.article>
+  )
+}
+
+function FlightRow({ flight, time }: { flight: Flight; time: number }) {
+  const isEmergency = flight.emergency
+  const wait = flight.queueEntered >= 0 ? queueWait(flight, time) : 0
+  const priority = isEmergency ? 'P' + String(4 - flight.severity) : 'NORMAL'
+  return (
+    <article className={'flight-row' + (isEmergency ? ' urgent-row' : '')}>
+      <span className={'operation-icon ' + flight.operation}>{flight.operation === 'arrival' ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}</span>
+      <span className="flight-main"><strong>{flight.number}{isEmergency && <em>EMERGENCY</em>}</strong><small>{flight.airline} · {flight.aircraft}</small></span>
+      <span className="fuel-cell"><strong className={flight.fuel <= 15 ? 'fuel-critical' : ''}>{Math.floor(flight.fuel)}%</strong><small>FUEL</small></span>
+      <span className="priority-cell"><b className={isEmergency ? 'priority-emergency' : ''}>{priority}</b><small>{titleCase(flight.status)}</small></span>
+      <span className="wait-cell">{wait}<small>MIN</small></span>
+    </article>
+  )
+}
+
+function EmergencyRow({ flight }: { flight: Flight }) {
+  const fuelWidth = Math.max(0, Math.min(100, flight.fuel))
+  return (
+    <div className="emergency-row">
+      <span className="emergency-symbol"><AlertTriangle size={15} /></span>
+      <span className="emergency-copy"><strong>{flight.number}<small>{flight.aircraft}</small></strong><span>{titleCase(flight.operation)} · Severity {flight.severity}</span></span>
+      <span className="fuel-gauge"><span><small>FUEL</small><b>{Math.floor(flight.fuel)}%</b></span><i><b style={{ width: fuelWidth + '%' }} /></i></span>
+    </div>
+  )
+}
+
+function StatRow({ label, value, alert = false }: { label: string; value: string | number; alert?: boolean }) {
+  return <div className="stat-row"><span>{label}</span><strong className={alert ? 'stat-alert' : ''}>{value}</strong></div>
+}
+
+function EventTable({ events, allEvents, loading }: { events: Event[]; allEvents: number; loading: boolean }) {
+  if (!events.length) return <div className="empty-state event-empty">{loading ? 'Loading event records…' : allEvents ? 'No events match this severity.' : 'No events have been recorded yet.'}</div>
+  return (
+    <div className="event-table">
+      <div className="event-header"><span>SIM TIME</span><span>EVENT</span><span>FLIGHT</span><span>DESCRIPTION</span><span>SEVERITY</span></div>
+      {events.map((event, index) => (
+        <div className="event-row" key={event.time + event.flightId + event.type + index}>
+          <span>{formatSimTime(event.time)}</span><span>{titleCase(event.type)}</span><span>{event.flightId || '—'}</span><span>{event.description}</span><b className={'severity ' + event.severity}>{event.severity}</b>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FlightModal({ busy, onClose, onSave }: {
+  busy: boolean
+  onClose: () => void
+  onSave: (flight: { operation: string; number: string; aircraft: string; fuel: number; emergency: boolean; severity: number }) => Promise<boolean>
+}) {
+  const [number, setNumber] = useState('')
+  const [operation, setOperation] = useState('arrival')
+  const [aircraft, setAircraft] = useState('A320')
+  const [fuel, setFuel] = useState(65)
+  const [emergency, setEmergency] = useState(false)
+  const [severity, setSeverity] = useState(2)
+  return (
+    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
+      <form className="modal-card" onSubmit={async (event) => {
+        event.preventDefault()
+        await onSave({ number: number.trim().toUpperCase(), operation, aircraft, fuel, emergency, severity })
+      }}>
+        <div className="modal-heading"><div><span className="section-kicker">MANUAL DISPATCH</span><h2>Register a flight</h2></div><button type="button" className="icon-button" aria-label="Close flight form" onClick={onClose}><X size={17} /></button></div>
+        <label>Flight number<input required maxLength={12} value={number} onChange={(event) => setNumber(event.target.value.toUpperCase())} placeholder="e.g. KC204" /></label>
+        <div className="form-columns">
+          <label>Operation<select value={operation} onChange={(event) => setOperation(event.target.value)}><option value="arrival">Arrival</option><option value="departure">Departure</option></select></label>
+          <label>Aircraft<select value={aircraft} onChange={(event) => setAircraft(event.target.value)}><option>A320</option><option>B738</option><option>E190</option></select></label>
+        </div>
+        <label className="range-label">Fuel on board <strong>{fuel}%</strong><input type="range" min="1" max="100" value={fuel} onChange={(event) => setFuel(Number(event.target.value))} /></label>
+        <label className="checkbox-label"><input type="checkbox" checked={emergency} onChange={(event) => setEmergency(event.target.checked)} /> Declare emergency</label>
+        {emergency && <label>Emergency severity<select value={severity} onChange={(event) => setSeverity(Number(event.target.value))}><option value="1">1 · Low</option><option value="2">2 · High</option><option value="3">3 · Critical</option></select></label>}
+        <div className="modal-actions"><button type="button" className="button quiet-button" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className="button primary-button" disabled={busy}>{busy ? <span className="button-spinner" /> : <Plus size={15} />}{busy ? 'Adding flight…' : 'Add to queue'}</button></div>
+      </form>
+    </div>
+  )
+}
+
+function GeneratorModal({ config, busy, onClose, onGenerate, onSave }: {
+  config: GeneratorConfig
+  busy: boolean
+  onClose: () => void
+  onGenerate: () => Promise<boolean>
+  onSave: (config: GeneratorConfig) => Promise<boolean>
+}) {
+  const [draft, setDraft] = useState(config)
+  const edit = (patch: Partial<GeneratorConfig>) => setDraft((previous) => ({ ...previous, ...patch }))
+  return (
+    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
+      <form className="modal-card" onSubmit={async (event) => { event.preventDefault(); await onSave(draft) }}>
+        <div className="modal-heading"><div><span className="section-kicker">TRAFFIC CONFIGURATION</span><h2>Flight generator</h2></div><button type="button" className="icon-button" aria-label="Close generator settings" onClick={onClose}><X size={17} /></button></div>
+        <label className="checkbox-label"><input type="checkbox" checked={draft.enabled} onChange={(event) => edit({ enabled: event.target.checked })} /> Enable automatic flight generation</label>
+        <div className="form-columns">
+          <label className="range-label">Arrival share <strong>{draft.arrivalPercent}%</strong><input type="range" min="0" max="100" value={draft.arrivalPercent} onChange={(event) => edit({ arrivalPercent: Number(event.target.value) })} /></label>
+          <label className="range-label">Emergency chance <strong>{draft.emergencyPercent}%</strong><input type="range" min="0" max="100" value={draft.emergencyPercent} onChange={(event) => edit({ emergencyPercent: Number(event.target.value) })} /></label>
+        </div>
+        <div className="form-columns">
+          <label>Fuel minimum<input type="number" min="1" max={draft.fuelMax} value={draft.fuelMin} onChange={(event) => edit({ fuelMin: Number(event.target.value) })} /></label>
+          <label>Fuel maximum<input type="number" min={draft.fuelMin} max="100" value={draft.fuelMax} onChange={(event) => edit({ fuelMax: Number(event.target.value) })} /></label>
+        </div>
+        <div className="form-columns">
+          <label>Generation interval (ticks)<input type="number" min="1" max="60" value={draft.trafficInterval} onChange={(event) => edit({ trafficInterval: Number(event.target.value) })} /></label>
+          <label>Deterministic seed<input type="number" min="0" value={draft.seed} onChange={(event) => edit({ seed: Number(event.target.value) })} /></label>
+        </div>
+        <div className="modal-actions split-actions"><button type="button" className="button quiet-button" disabled={busy} onClick={() => void onGenerate()}><Radio size={14} /> Generate one flight</button><button type="submit" className="button primary-button" disabled={busy}>{busy ? <span className="button-spinner" /> : <Check size={14} />}{busy ? 'Saving…' : 'Apply settings'}</button></div>
+      </form>
+    </div>
+  )
+}
+
 export default App
