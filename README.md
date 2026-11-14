@@ -6,7 +6,7 @@ AirportControlTower is a university simulation project for **6-топ. Airport C
 
 - C++20 simulation engine, Crow HTTP API, `std::priority_queue`, `std::mt19937`, mutex and condition variable
 - CMake and vcpkg (`Crow`, `x64-windows`)
-- React 19, TypeScript, Vite, Recharts, Motion, Lucide
+- React 19, TypeScript, Vite, React Router, i18next/react-i18next, Recharts, Motion, Lucide
 - CTest for deterministic C++ scheduling and integration tests
 
 ## Architecture
@@ -16,8 +16,9 @@ backend/include/simulation.hpp     Simulation state, scheduling, scenarios, stat
 backend/src/main.cpp               Crow HTTP API and background runner
 backend/tests/                     C++ tests and API concurrency check
 frontend/src/services/api.ts       Typed HTTP client
-frontend/src/App.tsx               Dashboard, controls, charts and event/queue views
+frontend/src/App.tsx               React Router shell, live dashboard, controls and global command palette
 frontend/src/components/AirportMap.tsx  Backend-state airport visualization
+frontend/src/components/OperationalPages.tsx  Radar, flight, queue, runway, scenario, analytics, settings and help workspaces
 docs/ALGORITHMS.md                 Implemented scheduling and statistic definitions
 docs/DEFENSE_GUIDE_KK.md           Kazakh-language presentation guide
 ```
@@ -32,6 +33,9 @@ The simulation engine owns the source of truth. The React client polls the API; 
 - Scenario comparisons with average wait, operation-specific delay, completed flights, queue peak, emergency handling, and runway utilization
 - Interactive airport schematic with runway markings, taxiways, holding areas, aircraft selection, status details, and zoom
 - Responsive dark operations dashboard with filters, loading/error feedback, and keyboard-operable controls
+- Thirteen routed workspaces, browser-persisted Light/Dark/System theme, Kazakh-default language selection, and Ctrl+K command palette
+- C++-provided scheduler rationale and explicitly synthetic radar projection fields
+- Deterministic custom experiment endpoint with configurable horizon, seed, traffic rates, fuel range, service durations, and clearing duration
 
 ## Priority queue and emergency policy
 
@@ -109,6 +113,7 @@ All endpoints are served from port 8080. The frontend client contract is in [fro
 | POST | `/api/simulation/start`, `/pause`, `/resume`, `/reset`, `/step` | Simulation controls |
 | POST | `/api/simulation/speed` | Set speed to 1, 2, 5, or 10 |
 | GET / POST | `/api/flights` | Read live flights / add a flight |
+| GET | `/api/queue/explain` | C++ priority order, tier, wait, endurance, and scheduling rationale |
 | POST | `/api/flights/random` | Generate a flight from configured random traffic |
 | GET | `/api/runway` | Runway state, active count, and safety invariant |
 | GET | `/api/statistics` | Current backend statistics |
@@ -116,6 +121,7 @@ All endpoints are served from port 8080. The frontend client contract is in [fro
 | GET | `/api/scenarios` | Scenario metadata |
 | POST | `/api/scenarios/load` | Load `normal`, `heavy`, or `overload` |
 | POST | `/api/scenarios/compare` | Run deterministic 180-minute comparison |
+| POST | `/api/scenarios/experiment` | Run an isolated custom deterministic experiment; live state is restored afterward |
 | GET / POST | `/api/generator`, `/api/generator/config` | Read / configure random traffic |
 
 Example request bodies:
@@ -128,7 +134,7 @@ Example request bodies:
 
 ## Tests
 
-The C++ suite is registered with CTest and covers priority ordering, emergency and fuel escalation, tie-breaking, aging fairness, runway occupancy and clearing, pause/resume/reset/speed, deterministic scenarios, statistics, generation, and concurrent requests.
+The C++ suite is registered with CTest and covers priority ordering, emergency and fuel escalation, tie-breaking, aging fairness, runway occupancy and clearing, pause/resume/reset/speed, deterministic scenarios, statistics, generation, queue explanations, custom experiment isolation, and concurrent requests.
 
 ```powershell
 cmake --build build-vs18 --config Release

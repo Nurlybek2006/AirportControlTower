@@ -1,24 +1,39 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import {
-  Activity, AlertTriangle, ArrowDownLeft, ArrowUpRight, BarChart3, Bell, Check,
-  ChevronDown, Clock3, Gauge, Plane, Play, Plus, Radio, RotateCcw,
-  ShieldAlert, SlidersHorizontal, StepForward, TowerControl, X,
+  Activity, AlertTriangle, ArrowDownLeft, ArrowUpRight, BarChart3, Bell, CalendarDays, Check,
+  ChevronDown, CircleHelp, Clock3, Gauge, ListOrdered, Plane, Play, Plus, Radar, Radio, RotateCcw, Search,
+  Settings2, ShieldAlert, Siren, StepForward, TowerControl, X,
 } from 'lucide-react'
 import { api } from './services/api'
-import type { Comparison, Event, Flight, GeneratorConfig, SimState } from './types'
+import type { Comparison, Event, ExperimentResult, Flight, GeneratorConfig, QueueEntry, SimState } from './types'
 import AirportMap from './components/AirportMap'
+import { changeLanguage, savedLanguage, savedTheme, translate, type Language, type Theme } from './i18n'
+import { downloadCsv } from './services/export'
 import './App.css'
 
 const ScenarioChart = lazy(() => import('./components/ScenarioChart'))
+const OperationalPages = lazy(() => import('./components/OperationalPages'))
 const navigation = [
-  { label: 'Overview', id: 'overview', icon: Activity },
-  { label: 'Live airport', id: 'airport', icon: TowerControl },
-  { label: 'Flight queue', id: 'queue', icon: Plane },
-  { label: 'Emergency control', id: 'emergencies', icon: ShieldAlert },
-  { label: 'Scenario analysis', id: 'analysis', icon: BarChart3 },
-  { label: 'Event log', id: 'events', icon: Radio },
+  { label: 'Operations overview', id: 'dashboard', icon: Activity },
+  { label: 'Live airport surface', id: 'airport', icon: TowerControl },
+  { label: 'Radar simulation', id: 'radar', icon: Radar },
+  { label: 'Flight management', id: 'flights', icon: Plane },
+  { label: 'Priority queue', id: 'queue', icon: ListOrdered },
+  { label: 'Emergency command', id: 'emergencies', icon: Siren },
+  { label: 'Runway control', id: 'runway', icon: TowerControl },
+  { label: 'Scenario laboratory', id: 'scenarios', icon: BarChart3 },
+  { label: 'Analytics', id: 'analytics', icon: Activity },
+  { label: 'Event history', id: 'events', icon: Radio },
+  { label: 'Flight schedule', id: 'schedule', icon: CalendarDays },
+  { label: 'Settings', id: 'settings', icon: Settings2 },
+  { label: 'Help and documentation', id: 'help', icon: CircleHelp },
 ] as const
+const routeFromPath = (pathname:string) => {
+  const id = pathname.replace(/^\/+|\/+$/g, '')
+  return navigation.some((item) => item.id === id) ? id : 'dashboard'
+}
 const initialState: SimState = {
   time: 0, running: false, speed: 1, scenario: 'normal', runway: 'FREE',
   activeFlights: 0, waitingFlights: 0, completedFlights: 0, emergencyCount: 0,
@@ -32,7 +47,7 @@ const initialState: SimState = {
 }
 const initialGenerator: GeneratorConfig = {
   enabled: false, arrivalPercent: 50, fuelMin: 40, fuelMax: 100,
-  emergencyPercent: 5, trafficInterval: 4, seed: 731,
+  emergencyPercent: 5, trafficInterval: 4, seed: 731, landingDuration: 3, takeoffDuration: 2, clearingDuration: 1,
 }
 const scenarioLabels: Record<string, string> = {
   normal: 'Normal operations', heavy: 'Heavy traffic', overload: 'Emergency overload',
@@ -43,20 +58,29 @@ const titleCase = (value: string) =>
   value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 const queueWait = (flight: Flight, time: number) => Math.max(0, (flight.serviceStart >= 0 ? flight.serviceStart : time) - flight.queueEntered)
 
-function App() {
+function AppShell() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const activeNav = routeFromPath(location.pathname)
   const [simulation, setSimulation] = useState(initialState)
   const [flights, setFlights] = useState<Flight[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [comparison, setComparison] = useState<Comparison[]>([])
+  const [experiment, setExperiment] = useState<ExperimentResult | null>(null)
+  const [queue, setQueue] = useState<QueueEntry[]>([])
   const [generator, setGenerator] = useState(initialGenerator)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [busyAction, setBusyAction] = useState('')
-  const [activeNav, setActiveNav] = useState('overview')
+  const [language, setLanguage] = useState<Language>(savedLanguage)
+  const [theme, setTheme] = useState<Theme>(savedTheme)
   const [queueFilter, setQueueFilter] = useState('all')
   const [eventFilter, setEventFilter] = useState('all')
+  const [eventQuery, setEventQuery] = useState('')
   const [showFlightForm, setShowFlightForm] = useState(false)
   const [showGenerator, setShowGenerator] = useState(false)
+  const [showCommand, setShowCommand] = useState(false)
+  const [commandQuery, setCommandQuery] = useState('')
   const [notice, setNotice] = useState('')
   const polling = useRef(false)
   const noticeTimer = useRef<number | undefined>(undefined)
@@ -65,13 +89,14 @@ function App() {
     if (polling.current) return
     polling.current = true
     try {
-      const [nextState, nextFlights, nextEvents, nextGenerator] = await Promise.all([
-        api.state(), api.flights(), api.events(), api.generator(),
+      const [nextState, nextFlights, nextEvents, nextGenerator, nextQueue] = await Promise.all([
+        api.state(), api.flights(), api.events(), api.generator(), api.queue(),
       ])
       setSimulation(nextState)
       setFlights(nextFlights)
       setEvents(nextEvents)
       setGenerator(nextGenerator)
+      setQueue(nextQueue)
       setError('')
       setLoading(false)
     } catch (reason) {
@@ -88,7 +113,31 @@ function App() {
     return () => { window.clearTimeout(first); window.clearInterval(interval) }
   }, [refresh])
 
+  useEffect(() => {
+    localStorage.setItem('skyline.language', language)
+    void changeLanguage(language)
+    document.documentElement.lang = language
+  }, [language])
+
+  useEffect(() => {
+    localStorage.setItem('skyline.theme', theme)
+    const media = window.matchMedia('(prefers-color-scheme: light)')
+    const update = () => { document.documentElement.dataset.theme = theme === 'system' ? (media.matches ? 'light' : 'dark') : theme }
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [theme])
+
   useEffect(() => () => window.clearTimeout(noticeTimer.current), [])
+
+  useEffect(() => {
+    const onKey = (event:KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setShowCommand(true) }
+      if (event.key === 'Escape') { setShowCommand(false); setShowFlightForm(false); setShowGenerator(false) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const runAction = async (name: string, operation: () => Promise<unknown>, success?: string) => {
     setBusyAction(name)
@@ -111,8 +160,8 @@ function App() {
   }
 
   const jumpTo = (item: typeof navigation[number]) => {
-    setActiveNav(item.id)
-    document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    navigate('/' + item.id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const activeFlight = flights.find((flight) => flight.status === 'landing' || flight.status === 'taking_off')
@@ -121,7 +170,7 @@ function App() {
   const visibleQueue = waitingFlights.filter((flight) =>
     queueFilter === 'all' || (queueFilter === 'emergency' ? flight.emergency : flight.operation === queueFilter),
   )
-  const visibleEvents = events.filter((event) => eventFilter === 'all' || event.severity === eventFilter)
+  const visibleEvents = events.filter((event) => (eventFilter === 'all' || event.severity === eventFilter) && (!eventQuery || `${event.type} ${event.flightId} ${event.description}`.toLowerCase().includes(eventQuery.toLowerCase())))
   const chartData = useMemo(() => comparison.map(({ statistics }) => ({
     scenario: scenarioLabels[statistics.scenario] ?? titleCase(statistics.scenario),
     wait: statistics.averageWait,
@@ -132,6 +181,8 @@ function App() {
     emergencies: statistics.emergencyHandled,
     utilization: statistics.runwayUtilization,
   })), [comparison])
+  const t = (key:string) => translate(language,key)
+  const dashboard = activeNav === 'dashboard'
 
   const compareScenarios = () => runAction(
     'compare', async () => setComparison(await api.compare()), 'Scenario comparison is ready',
@@ -144,13 +195,13 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <a className="brand" href="#overview" onClick={() => setActiveNav('overview')}>
+        <a className="brand" href="/dashboard" onClick={(event) => { event.preventDefault(); jumpTo(navigation[0]) }}>
           <span className="brand-mark"><TowerControl size={19} strokeWidth={1.8} /></span>
-          <span className="brand-copy"><strong>Airport Control Tower</strong><small>SIMULATION · LIVE OPERATIONS</small></span>
+          <span className="brand-copy"><strong>SKYLINE ATC</strong><small>SIMULATION · LIVE OPERATIONS</small></span>
         </a>
         <div className="airport-selector">
           <span className="airport-code">APT</span>
-          <span className="airport-name"><strong>Simulation Airport</strong><small>Single runway · A / B</small></span>
+          <span className="airport-name"><strong>{t('Simulation airport')}</strong><small>Single runway · A / B</small></span>
           <ChevronDown size={14} aria-hidden="true" />
         </div>
         <div className="side-caption">OPERATIONS</div>
@@ -166,14 +217,11 @@ function App() {
                 onClick={() => jumpTo(item)}
               >
                 <Icon size={16} strokeWidth={1.8} />
-                <span>{item.label}</span>
+                <span>{t(item.label)}</span>
                 {item.id === 'emergencies' && emergencies.length > 0 && <em>{emergencies.length}</em>}
               </button>
             )
           })}
-          <button type="button" className="nav-item" onClick={() => setShowGenerator(true)}>
-            <SlidersHorizontal size={16} strokeWidth={1.8} /><span>Settings</span>
-          </button>
         </nav>
         <div className="sidebar-foot">
           <div className="sidebar-live"><span className="signal-dot" /> Simulation services online</div>
@@ -183,13 +231,19 @@ function App() {
 
       <main className="main-area">
         <header className="topbar">
-          <div className="breadcrumb"><span>OPERATIONS</span><i>/</i><strong>{navigation.find((item) => item.id === activeNav)?.label.toUpperCase() ?? 'SETTINGS'}</strong></div>
+          <div className="breadcrumb"><span>SKYLINE ATC</span><i>/</i><strong>{t(navigation.find((item) => item.id === activeNav)?.label ?? 'Operations overview').toUpperCase()}</strong></div>
           <div className="topbar-right">
-            <div className="sim-clock"><span>SIMULATION TIME</span><strong>{formatSimTime(simulation.time)}</strong></div>
+            <label className="locale-picker" aria-label="Interface language"><select value={language} onChange={(event) => setLanguage(event.target.value as Language)}><option value="kk">KK</option><option value="ru">RU</option><option value="en">EN</option></select></label>
+            <label className="locale-picker theme-picker" aria-label="Color theme"><select value={theme} onChange={(event) => setTheme(event.target.value as Theme)}><option value="system">SYS</option><option value="light">LIGHT</option><option value="dark">DARK</option></select></label>
+            <div className="sim-clock"><span>{t('Simulation time').toUpperCase()}</span><strong>{formatSimTime(simulation.time)}</strong></div>
             <div className={'connection-pill' + (error ? ' disconnected' : '')} role="status">
               <span className="signal-dot" />{error ? 'RECONNECTING' : 'LIVE API'}
             </div>
-            <button type="button" className="icon-button" aria-label="View emergency control" onClick={() => jumpTo(navigation[3])}>
+            <button type="button" className="command-trigger" onClick={() => setShowCommand(true)} title="Quick navigation (Ctrl+K)"><Search size={13}/><span>Ctrl K</span></button>
+            {!dashboard && <button type="button" className={'button '+(simulation.running?'pause-button':'primary-button')} disabled={!!busyAction} onClick={() => void runAction('simulation',()=>api.control(simulation.running?'pause':simulation.time>0?'resume':'start'),'Simulation control updated')}>
+              {simulation.running?'Pause':simulation.time>0?'Resume':'Start'}
+            </button>}
+            <button type="button" className="icon-button" aria-label="View emergency control" onClick={() => jumpTo(navigation[5])}>
               <Bell size={17} />{emergencies.length > 0 && <i />}
             </button>
           </div>
@@ -202,11 +256,12 @@ function App() {
           </div>
         )}
 
-        <div className="workspace" id="overview">
+        <div className={'workspace route-' + activeNav}>
+          {dashboard && <>
           <section className="page-heading">
             <div>
               <div className="eyebrow"><span className="signal-dot" /> AIR TRAFFIC MANAGEMENT <i>/</i> {titleCase(simulation.scenario).toUpperCase()}</div>
-              <h1>Operations overview</h1>
+              <h1>{t('Operations overview')}</h1>
               <p>Live runway status, flight sequencing and operational performance.</p>
             </div>
             <div className="primary-controls" aria-label="Simulation controls">
@@ -219,25 +274,28 @@ function App() {
                 disabled={!!busyAction}
                 onClick={() => void runAction('simulation', () => api.control(simulation.running ? 'pause' : simulation.time > 0 ? 'resume' : 'start'), simulation.running ? 'Simulation paused' : simulation.time > 0 ? 'Simulation resumed' : 'Simulation started')}
               >
-                {busyAction === 'simulation' ? <span className="button-spinner" /> : simulation.running ? <span className="pause-mark">Ⅱ</span> : <Play size={14} fill="currentColor" />}
+                {busyAction === 'simulation' ? <span className="button-spinner" /> : simulation.running ? <span className="pause-mark">в…Ў</span> : <Play size={14} fill="currentColor" />}
                 {busyAction === 'simulation' ? 'Updating…' : simulation.running ? 'Pause simulation' : simulation.time > 0 ? 'Resume simulation' : 'Start simulation'}
               </button>
             </div>
           </section>
+          </>}
 
-          <section className="metric-grid" aria-label="Live operational metrics">
-            <MetricCard icon={<Plane />} label="RUNWAY MOVEMENT" value={simulation.activeFlights} hint={activeFlight ? activeFlight.number + ' · ' + titleCase(activeFlight.operation) : 'No active operation'} tone="cyan" />
-            <MetricCard icon={<Clock3 />} label="WAITING IN QUEUE" value={simulation.waitingFlights} hint={'Peak queue ' + simulation.statistics.maxQueueLength} tone="amber" />
+          {dashboard && <section className="metric-grid" aria-label="Live operational metrics">
+            <MetricCard icon={<Plane />} label={t('Runway movement')} value={simulation.activeFlights} hint={activeFlight ? activeFlight.number + ' · ' + titleCase(activeFlight.operation) : 'No active operation'} tone="cyan" />
+            <MetricCard icon={<Clock3 />} label={t('Waiting in queue')} value={simulation.waitingFlights} hint={'Peak queue ' + simulation.statistics.maxQueueLength} tone="amber" />
             <MetricCard icon={<Check />} label="COMPLETED" value={simulation.completedFlights} hint={simulation.statistics.totalGenerated + ' flights generated'} tone="green" />
-            <MetricCard icon={<Activity />} label="AVERAGE QUEUE WAIT" value={simulation.statistics.averageWait.toFixed(1) + ' min'} hint={'Maximum current wait ' + simulation.statistics.maxWait + ' min'} tone="blue" />
-            <MetricCard icon={<Gauge />} label="RUNWAY UTILIZATION" value={simulation.statistics.runwayUtilization.toFixed(1) + '%'} hint="Service time / elapsed time" tone="violet" />
+            <MetricCard icon={<Activity />} label={t('Average queue wait')} value={simulation.statistics.averageWait.toFixed(1) + ' min'} hint={'Maximum current wait ' + simulation.statistics.maxWait + ' min'} tone="blue" />
+            <MetricCard icon={<Gauge />} label={t('Runway utilization')} value={simulation.statistics.runwayUtilization.toFixed(1) + '%'} hint="Service time / elapsed time" tone="violet" />
             <MetricCard icon={<ShieldAlert />} label="PRIORITY WATCH" value={simulation.emergencyCount} hint={simulation.statistics.emergencyHandled + ' emergencies handled'} tone="red" />
-          </section>
+          </section>}
 
-          <section className="operations-grid">
+          {activeNav === 'airport' && <header className="route-heading"><span className="section-kicker">SKYLINE ATC / SURFACE</span><h1>{t('Live airport surface')}</h1><p>Aircraft state and service progress are synchronized to backend simulation ticks.</p></header>}
+          {activeNav === 'events' && <header className="route-heading"><span className="section-kicker">SKYLINE ATC / AUDIT TRAIL</span><h1>{t('Event history')}</h1><p>Timestamped events reported by the simulation engine.</p></header>}
+          {(dashboard || activeNav === 'airport') && <section className={'operations-grid' + (dashboard ? '' : ' airport-route-grid')}>
             <div className="panel airfield-panel" id="airport">
               <div className="panel-heading">
-                <div><span className="section-kicker">LIVE AIRFIELD</span><h2>Airport surface</h2></div>
+                <div><span className="section-kicker">{t('Live airfield').toUpperCase()}</span><h2>{t('Airport surface')}</h2></div>
                 <div className={'runway-indicator ' + (simulation.runway === 'FREE' ? 'is-free' : 'is-active')}>
                   <span className="runway-lamp" />
                   <span><strong>{simulation.runway === 'FREE' ? 'RUNWAY AVAILABLE' : titleCase(simulation.runway.replace('OCCUPIED_', '').replace('_', ' '))}</strong><small>{activeFlight ? activeFlight.number + ' · ' + activeFlight.operation.toUpperCase() : 'Runway A / B'}</small></span>
@@ -247,9 +305,9 @@ function App() {
               <AirportMap flights={flights} simulationTime={simulation.time} runway={simulation.runway} loading={loading} />
             </div>
 
-            <div className="panel queue-panel" id="queue">
+            {dashboard && <div className="panel queue-panel" id="queue">
               <div className="panel-heading">
-                <div><span className="section-kicker">PRIORITY SEQUENCING</span><h2>Flight queue <span className="count-badge">{waitingFlights.length}</span></h2></div>
+                <div><span className="section-kicker">PRIORITY SEQUENCING</span><h2>{t('Flight queue')} <span className="count-badge">{waitingFlights.length}</span></h2></div>
                 <button type="button" className="icon-button add-flight" aria-label="Create a flight" title="Create a flight" onClick={() => setShowFlightForm(true)}><Plus size={18} /></button>
               </div>
               <div className="queue-filters" role="group" aria-label="Filter flight queue">
@@ -264,13 +322,14 @@ function App() {
                 {visibleQueue.length === 0 && <div className="empty-state">{loading ? 'Loading flight data…' : 'No flights in this queue filter.'}</div>}
               </div>
               <div className="queue-foot"><span>Showing {Math.min(visibleQueue.length, 7)} of {visibleQueue.length} waiting flights</span><span>FIFO + priority aging</span></div>
-            </div>
+            </div>}
           </section>
+          }
 
-          <section className="lower-grid">
+          {dashboard && <section className="lower-grid">
             <div className="panel emergency-panel" id="emergencies">
               <div className="panel-heading">
-                <div><span className="section-kicker">SAFETY & PRIORITY</span><h2>Emergency control</h2></div>
+                <div><span className="section-kicker">SAFETY & PRIORITY</span><h2>{t('Emergency control')}</h2></div>
                 <span className={'state-badge ' + (emergencies.length ? 'critical' : 'clear')}><span className="signal-dot" />{emergencies.length ? emergencies.length + ' ACTIVE' : 'ALL CLEAR'}</span>
               </div>
               <div className="emergency-list">
@@ -282,7 +341,7 @@ function App() {
             </div>
 
             <div className="panel session-panel">
-              <div className="panel-heading"><div><span className="section-kicker">SESSION PERFORMANCE</span><h2>Operational statistics</h2></div><span className="live-small">{formatSimTime(simulation.time)}</span></div>
+              <div className="panel-heading"><div><span className="section-kicker">SESSION PERFORMANCE</span><h2>{t('Operational statistics')}</h2></div><span className="live-small">{formatSimTime(simulation.time)}</span></div>
               <div className="stat-list">
                 <StatRow label="Completed arrivals" value={simulation.statistics.completedArrivals} />
                 <StatRow label="Completed departures" value={simulation.statistics.completedDepartures} />
@@ -295,11 +354,11 @@ function App() {
               <div className="utilization-row"><span>RUNWAY SERVICE UTILIZATION</span><strong>{simulation.statistics.runwayUtilization.toFixed(1)}%</strong></div>
               <div className="utilization-track" aria-label={'Runway utilization ' + simulation.statistics.runwayUtilization.toFixed(1) + ' percent'}><span style={{ width: Math.max(0, Math.min(100, simulation.statistics.runwayUtilization)) + '%' }} /></div>
             </div>
-          </section>
+          </section>}
 
-          <section className="panel analysis-panel" id="analysis">
+          {dashboard && <section className="panel analysis-panel" id="analysis">
             <div className="panel-heading analysis-heading">
-              <div><span className="section-kicker">DETERMINISTIC DECISION SUPPORT</span><h2>Scenario comparison</h2><p>Fixed seeds · shared 180-minute horizon · C++-calculated results</p></div>
+              <div><span className="section-kicker">DETERMINISTIC DECISION SUPPORT</span><h2>{t('Scenario comparison')}</h2><p>Fixed seeds · shared 180-minute horizon · C++-calculated results</p></div>
               <button type="button" className="button quiet-button" disabled={!!busyAction} onClick={() => void compareScenarios()}>
                 {busyAction === 'compare' ? <span className="button-spinner" /> : <BarChart3 size={15} />}
                 {busyAction === 'compare' ? 'Comparing…' : comparison.length ? 'Re-run comparison' : 'Compare scenarios'}
@@ -330,32 +389,47 @@ function App() {
             ) : (
               <div className="analysis-empty"><BarChart3 size={18} /><span>Run the comparison to see waiting time, delay, throughput, emergency handling and runway use.</span></div>
             )}
-          </section>
+          </section>}
 
-          <section className="panel events-panel" id="events">
+          {(dashboard || activeNav === 'events') && <section className="panel events-panel" id="events">
             <div className="panel-heading">
-              <div><span className="section-kicker">AUDIT TRAIL</span><h2>Event log</h2></div>
+              <div><span className="section-kicker">AUDIT TRAIL</span><h2>{t('Event log')}</h2></div>
+              {activeNav === 'events' && <input className="event-search" value={eventQuery} onChange={(event)=>setEventQuery(event.target.value)} placeholder="Search events" aria-label="Search events"/>}
               <label className="event-filter">SEVERITY
                 <select value={eventFilter} onChange={(event) => setEventFilter(event.target.value)}>
                   <option value="all">All events</option><option value="critical">Critical</option><option value="warning">Warning</option><option value="success">Success</option><option value="info">Info</option>
                 </select>
               </label>
+              {activeNav === 'events' && <button className="button quiet-button" onClick={()=>downloadCsv('skyline-events.csv',visibleEvents.map(event=>({time:event.time,type:event.type,severity:event.severity,flightId:event.flightId,description:event.description})))}>Export CSV</button>}
               <span className="live-small">{visibleEvents.length} RECORDS</span>
             </div>
-            <EventTable events={visibleEvents.slice(0, 10)} allEvents={events.length} loading={loading} />
+            <EventTable events={visibleEvents.slice(0, activeNav === 'events' ? 100 : 10)} allEvents={events.length} loading={loading} />
           </section>
+          }
+
+          {!['dashboard','airport','events'].includes(activeNav) && <Suspense fallback={<div className="panel chart-loading">Loading workspace…</div>}><OperationalPages
+            page={activeNav} flights={flights} queue={queue} events={events} comparison={comparison} experiment={experiment} simulation={simulation}
+            language={language} theme={theme} busy={!!busyAction} generator={generator}
+            setLanguage={setLanguage} setTheme={setTheme} onAddFlight={() => setShowFlightForm(true)} onSettings={() => setShowGenerator(true)}
+            onEmergency={(flight,severity)=>{if(window.confirm(`Declare emergency for ${flight.number} at severity ${severity}?`))void runAction('emergency',()=>api.declareEmergency(flight.id,severity),`Emergency declared for ${flight.number}`)}}
+            onScenario={(scenario) => void loadAndStart(scenario)} onCompare={() => void compareScenarios()}
+            onExperiment={(config) => void runAction('experiment', async () => setExperiment(await api.experiment(config)), 'Custom experiment complete')}
+            onSpeed={(speed) => void runAction('speed', () => api.speed(speed), 'Speed updated')}
+            onReset={() => void runAction('reset', () => api.control('reset'), 'Simulation reset')}
+          /></Suspense>}
 
           <footer className="workspace-footer">
             <span><TowerControl size={14} /> AIRPORT CONTROL TOWER <i>·</i> C++20 SIMULATION ENGINE</span>
             <div className="speed-controls" aria-label="Simulation speed">
               <span>SPEED</span>
               {[1, 2, 5, 10].map((speed) => (
-                <button type="button" key={speed} className={simulation.speed === speed ? 'selected' : ''} aria-pressed={simulation.speed === speed} disabled={!!busyAction} onClick={() => void runAction('speed', () => api.speed(speed), 'Simulation speed set to ' + speed + '×')}>{speed}×</button>
+                <button type="button" key={speed} className={simulation.speed === speed ? 'selected' : ''} aria-pressed={simulation.speed === speed} disabled={!!busyAction} onClick={() => void runAction('speed', () => api.speed(speed), 'Simulation speed set to ' + speed + 'Г—')}>{speed}Г—</button>
               ))}
             </div>
             <button type="button" className="reset-button" disabled={!!busyAction} onClick={() => void runAction('reset', () => api.control('reset'), 'Simulation reset')}><RotateCcw size={13} /> Reset</button>
           </footer>
         </div>
+        <Outlet />
       </main>
 
       {notice && <div className="toast" role="status" aria-live="polite"><Check size={15} />{notice}</div>}
@@ -379,8 +453,15 @@ function App() {
           onSave={async (next) => runAction('generator', async () => setGenerator(await api.configureGenerator(next)), 'Generator settings saved')}
         />
       )}
+      {showCommand && <CommandPalette query={commandQuery} setQuery={setCommandQuery} onClose={() => {setShowCommand(false);setCommandQuery('')}} onRoute={(item) => {setShowCommand(false);setCommandQuery('');jumpTo(item)}} onAction={(action) => {setShowCommand(false);setCommandQuery('');if(action==='flight')setShowFlightForm(true);else if(action==='settings')setShowGenerator(true);else if(action==='step')void runAction('step',()=>api.control('step'),'Advanced one tick');else if(action==='reset')void runAction('reset',()=>api.control('reset'),'Simulation reset');else void runAction('simulation',()=>api.control(simulation.running?'pause':simulation.time>0?'resume':'start'),'Simulation control updated')}} />}
     </div>
   )
+}
+
+function CommandPalette({query,setQuery,onClose,onRoute,onAction}:{query:string;setQuery:(q:string)=>void;onClose:()=>void;onRoute:(item:typeof navigation[number])=>void;onAction:(action:string)=>void}){
+  const routes=navigation.filter(item=>item.label.toLowerCase().includes(query.toLowerCase()))
+  const commands=[{id:'simulation',label:'Start / pause simulation'},{id:'step',label:'Advance one simulation tick'},{id:'flight',label:'Create a flight'},{id:'settings',label:'Open traffic generator settings'},{id:'reset',label:'Reset current simulation'}].filter(item=>item.label.toLowerCase().includes(query.toLowerCase()))
+  return <div className="command-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget)onClose()}}><section className="command-palette" role="dialog" aria-modal="true" aria-label="Quick navigation"><div className="command-search"><Search size={17}/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search pages and actions…" onKeyDown={event=>{if(event.key==='Escape')onClose();if(event.key==='Enter'&&routes[0])onRoute(routes[0])}}/><kbd>ESC</kbd></div><div className="command-section"><span>WORKSPACES</span>{routes.map(item=><button type="button" key={item.id} onClick={()=>onRoute(item)}><item.icon size={15}/>{item.label}<kbd>↵</kbd></button>)}{!routes.length&&<small>No matching pages</small>}</div><div className="command-section"><span>SIMULATION ACTIONS</span>{commands.map(item=><button type="button" key={item.id} onClick={()=>onAction(item.id)}><span className="command-dot"/>{item.label}<kbd>↵</kbd></button>)}</div></section></div>
 }
 
 function MetricCard({ icon, label, value, hint, tone }: { icon: React.ReactNode; label: string; value: string | number; hint: string; tone: string }) {
@@ -494,10 +575,27 @@ function GeneratorModal({ config, busy, onClose, onGenerate, onSave }: {
           <label>Generation interval (ticks)<input type="number" min="1" max="60" value={draft.trafficInterval} onChange={(event) => edit({ trafficInterval: Number(event.target.value) })} /></label>
           <label>Deterministic seed<input type="number" min="0" value={draft.seed} onChange={(event) => edit({ seed: Number(event.target.value) })} /></label>
         </div>
+        <div className="form-columns">
+          <label>Landing duration (ticks)<input type="number" min="1" max="10" value={draft.landingDuration} onChange={(event) => edit({ landingDuration: Number(event.target.value) })} /></label>
+          <label>Takeoff duration (ticks)<input type="number" min="1" max="10" value={draft.takeoffDuration} onChange={(event) => edit({ takeoffDuration: Number(event.target.value) })} /></label>
+        </div>
+        <label>Runway clearing (ticks)<input type="number" min="1" max="5" value={draft.clearingDuration} onChange={(event) => edit({ clearingDuration: Number(event.target.value) })} /></label>
         <div className="modal-actions split-actions"><button type="button" className="button quiet-button" disabled={busy} onClick={() => void onGenerate()}><Radio size={14} /> Generate one flight</button><button type="submit" className="button primary-button" disabled={busy}>{busy ? <span className="button-spinner" /> : <Check size={14} />}{busy ? 'Saving…' : 'Apply settings'}</button></div>
       </form>
     </div>
   )
 }
 
-export default App
+function RouteOutlet() { return <Outlet /> }
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route element={<AppShell />}>
+        {navigation.map((item) => <Route key={item.id} path={item.id} element={<RouteOutlet />} />)}
+      </Route>
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  )
+}
