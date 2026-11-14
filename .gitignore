@@ -1,0 +1,25 @@
+# C++ / CMake
+/build/
+/out/
+/cmake-build-*/
+*.exe
+*.obj
+*.pdb
+*.ilk
+*.dll
+*.lib
+*.log
+events.log
+CMakeUserPresets.json
+
+# React / Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
