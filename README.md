@@ -1,85 +1,92 @@
 # AirportControlTower
 
-AirportControlTower is a university simulation project for **6-топ. Airport Control Tower — Әуежай диспетчері**. It models arrivals and departures sharing one runway, fuel use, emergency handling, event logging, and priority-based dispatch. The dashboard reads live state and statistics from the C++ engine.
+AirportControlTower — **«6-топ. Airport Control Tower — Әуежай диспетчері»** тақырыбы бойынша әзірленген университеттік симуляциялық жоба. Жүйе бір ұшу-қону жолағын пайдаланатын келу және ұшу рейстерін, жанармай шығынын, төтенше жағдайларды, оқиғалар журналын және басымдықпен диспетчерлеуді модельдейді. Веб-интерфейс симуляция күйі мен статистиканы C++ қозғалтқышынан алады.
 
-## Technologies
+## Технологиялар
 
-- C++20 simulation engine, Crow HTTP API, `std::priority_queue`, `std::mt19937`, mutex and condition variable
-- CMake and vcpkg (`Crow`, `x64-windows`)
+- C++20, Crow HTTP API, `std::priority_queue`, `std::mt19937`, mutex және condition variable
+- CMake және vcpkg (`Crow`, `x64-windows`)
 - React 19, TypeScript, Vite, React Router, i18next/react-i18next, Recharts, Motion, Lucide
-- CTest for deterministic C++ scheduling and integration tests
+- CTest — детерминделген C++ және интеграциялық тесттер
 
-## Architecture
+## Архитектура
 
-```text
-backend/include/simulation.hpp     Simulation state, scheduling, scenarios, statistics
-backend/src/main.cpp               Crow HTTP API and background runner
-backend/tests/                     C++ tests and API concurrency check
-frontend/src/services/api.ts       Typed HTTP client
-frontend/src/App.tsx               React Router shell, live dashboard, controls and global command palette
-frontend/src/components/AirportMap.tsx  Backend-state airport visualization
-frontend/src/components/OperationalPages.tsx  Radar, flight, queue, runway, scenario, analytics, settings and help workspaces
-docs/ALGORITHMS.md                 Implemented scheduling and statistic definitions
-docs/DEFENSE_GUIDE_KK.md           Kazakh-language presentation guide
-```
+| Жол | Жауапкершілігі |
+| --- | --- |
+| `backend/include/simulation.hpp` | Симуляция күйі, жоспарлау, сценарийлер және статистика |
+| `backend/src/main.cpp` | Crow HTTP API және фондық орындаушы |
+| `backend/tests/` | C++ тесттері және API қатар орындалуын тексеру |
+| `frontend/src/services/api.ts` | Типтелген HTTP клиенті |
+| `frontend/src/App.tsx` | React Router қаңқасы, панель және басқару элементтері |
+| `frontend/src/components/AirportMap.tsx` | Backend күйіне негізделген әуежай визуализациясы |
+| `frontend/src/components/OperationalPages.tsx` | Радар, рейс, кезек, жолақ, сценарий, аналитика, баптау және көмек беттері |
+| `docs/ALGORITHMS.md` | Жоспарлау алгоритмі мен статистика анықтамалары |
+| `docs/DEFENSE_GUIDE_KK.md` | Жобаны қорғауға арналған қазақша нұсқаулық |
 
-The simulation engine owns the source of truth. The React client polls the API; the airport map derives aircraft status and movement progress from flight status, service start, duration, and simulation time. It does not create independent flight motion.
+Симуляцияның негізгі дереккөзі — C++ қозғалтқышы. React клиенті API-ден күйді мерзімді түрде алады. Әуежай картасындағы ұшақтың қозғалысы рейс күйіне, қызмет басталған уақытқа, қызмет ұзақтығына және симуляция уақытына сүйенеді; интерфейс сервер күйінен бөлек қозғалыс ойлап шығармайды.
 
-## Features
+## Мүмкіндіктер
 
-- Live arrival/departure queue, fuel levels, emergency severity, runway status, and event history
-- Start, pause, resume, single-tick step, reset, and 1×/2×/5×/10× speed controls
-- Manual flight and emergency creation, configurable random traffic, and three reproducible scenarios
-- Scenario comparisons with average wait, operation-specific delay, completed flights, queue peak, emergency handling, and runway utilization
-- Interactive airport schematic with runway markings, taxiways, holding areas, aircraft selection, status details, and zoom
-- Responsive dark operations dashboard with filters, loading/error feedback, and keyboard-operable controls
-- Thirteen routed workspaces, browser-persisted Light/Dark/System theme, Kazakh-default language selection, and Ctrl+K command palette
-- C++-provided scheduler rationale and explicitly synthetic radar projection fields
-- Deterministic custom experiment endpoint with configurable horizon, seed, traffic rates, fuel range, service durations, and clearing duration
+- Келу/ұшу кезегі, жанармай, төтенше жағдай деңгейі, жолақ күйі және оқиғалар журналы
+- Симуляцияны бастау, кідірту, жалғастыру, бір қадам орындау, бастапқы күйге қайтару және 1×/2×/5×/10× жылдамдықты таңдау
+- Рейс қосу, төтенше рейс жасау, кездейсоқ трафикті баптау және үш қайталанатын сценарийді орындау
+- Орташа күту уақытын, келу/ұшу кідірісін, аяқталған рейстерді, кезек шегін, төтенше рейстерді және жолақ жүктемесін салыстыру
+- Жолақ белгілері, taxiway, күту нүктелері, ұшақ таңдау, күй мәліметтері және масштабтау мүмкіндігі бар әуежай сызбасы
+- Іздеу, сүзгілер, жүктелу/қате күйлері және пернетақтамен басқару
+- 13 маршрут, браузерде сақталатын Light/Dark/System тақырыбы, алғашқы ашылғандағы қазақ тілі және Ctrl+K командалар мәзірі
+- C++ есептейтін жоспарлау себебі және синтетикалық радар параметрлері
+- Ұзақтығы, seed, трафик қарқыны, жанармай диапазоны, қызмет және босату уақыты бапталатын детерминделген тәжірибе API-і
 
-## Priority queue and emergency policy
+## Басымдық кезегі және жолақ қауіпсіздігі
 
-The dispatcher rebuilds a C++ `std::priority_queue` from the current eligible queue before each runway dispatch. This recalculates aging and fuel-based urgency every tick. Severity-3 emergency arrivals rank first. Other emergency arrivals rank next, ordered by lower predicted fuel endurance (`fuel / burn rate`). Emergency departures follow, ordered by severity descending. Normal flights age one tier per 12 minutes and reach the shared emergency-arrival tier after 24 minutes. Ties use earlier queue entry, then stable flight ID. See [docs/ALGORITHMS.md](docs/ALGORITHMS.md) for exact ordering and edge cases.
+Диспетчер рейсті жолаққа жіберер алдында C++ `std::priority_queue` құрылымын жарамды кезектен қайта жасайды. Күту уақытына негізделген әділдік түзетуі мен жанармайға негізделген шұғылдық әр қадамда қайта есептеледі.
 
-An emergency may reorder waiting traffic but cannot interrupt a landing or takeoff already in progress. A single active-flight index owns the runway. The runway passes through a clearing state before the next dispatch.
+Басымдық тәртібі:
 
-## Statistics
+1. 3-деңгейлі төтенше келу рейсі.
+2. Басқа төтенше келу рейстері: жанармайға жететін болжамды уақыты азы бірінші.
+3. Төтенше ұшу рейстері: деңгейі жоғарысы бірінші.
+4. Қалыпты рейстер: әр 12 минут күткен сайын бір басымдық сатысы көтеріледі; 24 минуттан кейін төтенше келулермен бір деңгейге жетеді.
 
-- **Average waiting time:** mean of `serviceStart - queueEntered` for completed flights.
-- **Average arrival/departure delay:** mean of `max(0, serviceStart - scheduledTime)` for completed flights of that operation.
-- **Completed flights:** flights whose runway service completed.
-- **Queue length:** queued, approaching, and ready flights; scheduled and active flights are excluded.
-- **Maximum queue length:** highest eligible waiting count sampled by the simulation.
-- **Runway utilization:** occupied service ticks divided by elapsed simulation ticks; clearing ticks are excluded.
-- **Emergency flights handled:** completed flights marked emergency.
-- **Diversions:** aircraft diverted after fuel endurance reached zero while waiting.
+Басымдығы тең болса, кезекке ертерек кірген рейс, содан кейін тұрақты рейс ID-і алға шығады. Толық ережелер [docs/ALGORITHMS.md](docs/ALGORITHMS.md) ішінде берілген. Төтенше рейс күтіп тұрғандардың ретін өзгертеді, бірақ жүріп жатқан қону не ұшуды үзбейді. Жолақты бір мезетте тек бір белсенді рейс иеленеді; келесі рейс алдында жолақ босатылады.
 
-Empty averages and utilization return zero, so the API does not emit NaN or Infinity. Definitions and denominators are documented in [docs/ALGORITHMS.md](docs/ALGORITHMS.md).
+## Статистиканы есептеу
 
-## Scenarios
+- **Орташа күту:** аяқталған рейстер үшін `serviceStart - queueEntered` орташа мәні.
+- **Орташа келу/ұшу кідірісі:** сол бағыттағы аяқталған рейстер үшін `max(0, serviceStart - scheduledTime)` орташа мәні.
+- **Аяқталған рейс:** жолақтағы қызметі біткен рейс.
+- **Кезек ұзындығы:** кезектегі, жақындап келе жатқан және дайын рейстер; жоспарланған әрі жолақтағы белсенді рейстер есептелмейді.
+- **Ең үлкен кезек:** симуляцияда тіркелген күту рейстерінің ең жоғары саны.
+- **Жолақ жүктемесі:** жолақ қызметіндегі қадамдар / өткен симуляция қадамдары; босату уақыты саналмайды.
+- **Өңделген төтенше рейс:** төтенше белгісі бар аяқталған рейс.
+- **Бағыты өзгертілген рейс:** күтіп тұрған кезде жанармайы таусылғандықтан бағыты өзгерген ұшақ.
 
-Each comparison runs for the same 180 simulation-minute horizon using fixed seeds.
+Бөлгіші нөл болатын орташа мәндер мен жолақ жүктемесі `0` қайтарады. API `NaN` не `Infinity` бермейді. Есептеу бөлгіштері [docs/ALGORITHMS.md](docs/ALGORITHMS.md) ішінде жазылған.
 
-| Scenario | Seed | Flights | Traffic profile |
+## Үш сценарий
+
+Салыстыру бірдей 180 симуляциялық минутты және бекітілген кездейсоқ тұқымдарды қолданады.
+
+| Сценарий | Тұқым | Рейс саны | Трафик сипаты |
 | --- | ---: | ---: | --- |
-| Normal operations | 731 | 14 | 3-minute schedule spacing; 1-in-16 emergency chance |
-| Heavy traffic | 1942 | 30 | 2-minute spacing; 1-in-8 emergency chance |
-| Emergency overload | 5813 | 24 | Seven emergency flights; first five share the initial schedule time |
+| Қалыпты жұмыс | 731 | 14 | 3 минут аралық; төтенше жағдай ықтималдығы 1/16 |
+| Қарқынды трафик | 1942 | 30 | 2 минут аралық; төтенше жағдай ықтималдығы 1/8 |
+| Төтенше жүктеме | 5813 | 24 | 7 төтенше рейс; алғашқы бесеуінің жоспарланған уақыты бірдей |
 
-Arrival and departure traffic alternates in preset data. Scenario comparisons run on a temporary simulation snapshot and restore the live simulation afterward.
+Дайын деректерде келу және ұшу рейстері кезектеседі. Салыстыру уақытша симуляцияда есептеліп, соңында негізгі күй қалпына келтіріледі.
 
-## Requirements
+## Қажетті құралдар
 
-- Windows with Visual Studio 2026 C++ workload (or a compatible C++20 compiler and CMake generator)
-- CMake 3.25 or newer
-- vcpkg with Crow installed for `x64-windows`
-- Node.js and npm
+- Windows және Visual Studio 2026 C++ құралдары (немесе C++20/CMake қолдайтын орта)
+- CMake 3.25+
+- `x64-windows` платформасына арналған Crow орнатылған vcpkg
+- Node.js және npm
 
-The commands below use the existing vcpkg checkout at `C:/ENT/vcpkg`; update the path if yours differs.
+Төмендегі командалар vcpkg `C:/ENT/vcpkg` ішінде орнатылған деп есептейді. Басқа жол болса, toolchain параметрін өзгертіңіз.
 
-## Build and run the backend
+## Backend құрастыру және іске қосу
 
-From an x64 Visual Studio Developer PowerShell at the repository root:
+Репозиторий түбірінде x64 Visual Studio Developer PowerShell ашып, орындаңыз:
 
 ```powershell
 cmake -S . -B build-vs18 -G "Visual Studio 18 2026" -A x64 -DCMAKE_TOOLCHAIN_FILE=C:/ENT/vcpkg/scripts/buildsystems/vcpkg.cmake
@@ -88,11 +95,11 @@ ctest --test-dir build-vs18 -C Release --output-on-failure
 ./build-vs18/Release/airport-control-tower.exe
 ```
 
-The backend listens on `http://127.0.0.1:8080`. If your Visual Studio installation registers another generator name, select it with `cmake -G` while keeping the x64 architecture and vcpkg toolchain.
+Backend `http://127.0.0.1:8080` мекенжайын тыңдайды. Visual Studio-да генератор атауы басқа болса, `cmake -G` мәнін өзгертіп, x64 пен vcpkg параметрлерін қалдырыңыз.
 
-## Run the frontend
+## Frontend іске қосу
 
-In a second terminal:
+Екінші терминалда:
 
 ```powershell
 cd frontend
@@ -100,31 +107,31 @@ npm ci
 npm run dev
 ```
 
-Open the Vite URL printed in the terminal (normally `http://localhost:5173`). Vite proxies `/api` to the local backend. For a production bundle, run `npm run build`; `npm run lint` checks the frontend source.
+Терминал көрсеткен Vite мекенжайын ашыңыз (әдетте `http://localhost:5173`). Vite `/api` сұрауларын backend-ке бағыттайды. Өндірістік жинақ үшін `npm run build`, кодты линттеу үшін `npm run lint` орындаңыз.
 
 ## API
 
-All endpoints are served from port 8080. The frontend client contract is in [frontend/src/services/api.ts](frontend/src/services/api.ts); request validation is implemented in `backend/src/main.cpp`.
+API 8080 портында жұмыс істейді. Frontend-тің типтелген келісімшарты [frontend/src/services/api.ts](frontend/src/services/api.ts), ал сұрауларды тексеру [backend/src/main.cpp](backend/src/main.cpp) ішінде орналасқан.
 
-| Method | Endpoint | Purpose |
+| Әдіс | Endpoint | Мақсаты |
 | --- | --- | --- |
-| GET | `/api/health` | Liveness and engine identity |
-| GET | `/api/simulation/state` | Time, running state, speed, runway, live counts, statistics |
-| POST | `/api/simulation/start`, `/pause`, `/resume`, `/reset`, `/step` | Simulation controls |
-| POST | `/api/simulation/speed` | Set speed to 1, 2, 5, or 10 |
-| GET / POST | `/api/flights` | Read live flights / add a flight |
-| GET | `/api/queue/explain` | C++ priority order, tier, wait, endurance, and scheduling rationale |
-| POST | `/api/flights/random` | Generate a flight from configured random traffic |
-| GET | `/api/runway` | Runway state, active count, and safety invariant |
-| GET | `/api/statistics` | Current backend statistics |
-| GET | `/api/events` | Event log |
-| GET | `/api/scenarios` | Scenario metadata |
-| POST | `/api/scenarios/load` | Load `normal`, `heavy`, or `overload` |
-| POST | `/api/scenarios/compare` | Run deterministic 180-minute comparison |
-| POST | `/api/scenarios/experiment` | Run an isolated custom deterministic experiment; live state is restored afterward |
-| GET / POST | `/api/generator`, `/api/generator/config` | Read / configure random traffic |
+| GET | `/api/health` | Қызмет күйі мен қозғалтқыш нұсқасы |
+| GET | `/api/simulation/state` | Уақыт, іске қосылу, жылдамдық, жолақ, рейс санағы және статистика |
+| POST | `/api/simulation/start`, `/pause`, `/resume`, `/reset`, `/step` | Симуляцияны басқару |
+| POST | `/api/simulation/speed` | Жылдамдықты 1, 2, 5 немесе 10 ету |
+| GET / POST | `/api/flights` | Рейстерді оқу / рейс қосу |
+| GET | `/api/queue/explain` | C++ кезегі, орны, күтуі, жанармай қоры және жоспарлау себебі |
+| POST | `/api/flights/random` | Кездейсоқ рейс генерациялау |
+| GET | `/api/runway` | Жолақ күйі, белсенді рейс саны және қауіпсіздік шарты |
+| GET | `/api/statistics` | Backend есептеген статистика |
+| GET | `/api/events` | Оқиғалар журналы |
+| GET | `/api/scenarios` | Сценарийлер тізімі мен параметрлері |
+| POST | `/api/scenarios/load` | `normal`, `heavy` немесе `overload` жүктеу |
+| POST | `/api/scenarios/compare` | 180 минуттық детерминделген салыстыру |
+| POST | `/api/scenarios/experiment` | Оқшауланған тәжірибе; соңында негізгі күй қайтарылады |
+| GET / POST | `/api/generator`, `/api/generator/config` | Трафик баптауларын оқу / өзгерту |
 
-Example request bodies:
+Сұрау үлгілері:
 
 ```json
 {"speed":5}
@@ -132,9 +139,9 @@ Example request bodies:
 {"scenario":"overload"}
 ```
 
-## Tests
+## Тестілеу
 
-The C++ suite is registered with CTest and covers priority ordering, emergency and fuel escalation, tie-breaking, aging fairness, runway occupancy and clearing, pause/resume/reset/speed, deterministic scenarios, statistics, generation, queue explanations, custom experiment isolation, and concurrent requests.
+CTest ішіндегі C++ тесттері басымдық ретін, төтенше жағдай мен жанармайға байланысты басымдықты, теңдікті шешуді, әділ кезекті, жолақтың қауіпсіз күйін, кідірту/жалғастыру/қалпына келтіру/жылдамдықты, детерминделген сценарийлерді, статистиканы, генераторды, кезекті түсіндіруді, оқшауланған тәжірибені және параллель сұрауларды қамтиды.
 
 ```powershell
 cmake --build build-vs18 --config Release
@@ -146,4 +153,4 @@ cd ..
 node backend/tests/api_concurrency.mjs
 ```
 
-The API concurrency check requires the backend to be running. More detail on the scheduling rules is in [docs/ALGORITHMS.md](docs/ALGORITHMS.md); the Kazakh defense outline is in [docs/DEFENSE_GUIDE_KK.md](docs/DEFENSE_GUIDE_KK.md).
+API сұрауларының қатар орындалуын тексеретін скрипт backend жұмыс істеп тұрған кезде орындалады. Алгоритм ережелері [docs/ALGORITHMS.md](docs/ALGORITHMS.md), ал қорғау нұсқаулығы [docs/DEFENSE_GUIDE_KK.md](docs/DEFENSE_GUIDE_KK.md) файлында берілген.
