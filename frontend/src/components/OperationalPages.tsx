@@ -3,6 +3,7 @@ import { AlertTriangle, ArrowDownLeft, ArrowUpRight, BarChart3, Plane, Radio, Se
 import type { Comparison, Event, ExperimentConfig, ExperimentResult, Flight, GeneratorConfig, QueueEntry, SimState } from '../types'
 import { translate, type Language, type Theme } from '../i18n'
 import i18n from 'i18next'
+import LocalizedMarkup from './LocalizedMarkup'
 
 type Props = {
   page:string; flights:Flight[]; queue:QueueEntry[]; events:Event[]; comparison:Comparison[]; experiment:ExperimentResult|null; simulation:SimState;
@@ -33,7 +34,7 @@ function PageHeading({page,language,description}:{page:string;language:Language;
   return <header className="route-heading"><span className="section-kicker">SKYLINE ATC / {page.toUpperCase()}</span><h1>{translate(language,titles[page]??page)}</h1><p>{translate(language,description)}</p></header>
 }
 function Summary({label,value,unit=''}:{label:string;value:string|number;unit?:string}){return <article className="route-summary"><span>{localized(label)}</span><strong>{value}<small>{unit}</small></strong></article>}
-function Panel({title,children,action}:{title:string;children:React.ReactNode;action?:React.ReactNode}){return <section className="panel route-panel"><header className="route-panel-heading"><h2>{localized(title)}</h2>{action}</header>{children}</section>}
+function Panel({title,children,action}:{title:string;children:React.ReactNode;action?:React.ReactNode}){const language=currentLanguage();return <section className="panel route-panel"><header className="route-panel-heading"><h2>{localized(title)}</h2><LocalizedMarkup language={language}>{action}</LocalizedMarkup></header><LocalizedMarkup language={language}>{children}</LocalizedMarkup></section>}
 
 function RadarPage({flights,language}:{flights:Flight[];language:Language}){
   const [range,setRange]=useState(100),[arrivals,setArrivals]=useState(true),[departures,setDepartures]=useState(true),[emergencyOnly,setEmergencyOnly]=useState(false),[labelsOn,setLabelsOn]=useState(true),[selected,setSelected]=useState('')

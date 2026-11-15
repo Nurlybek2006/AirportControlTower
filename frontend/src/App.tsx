@@ -9,6 +9,7 @@ import {
 import { api } from './services/api'
 import type { Comparison, Event, ExperimentResult, Flight, GeneratorConfig, QueueEntry, SimState } from './types'
 import AirportMap from './components/AirportMap'
+import LocalizedMarkup from './components/LocalizedMarkup'
 import { changeLanguage, savedLanguage, savedTheme, translate, type Language, type Theme } from './i18n'
 import { downloadCsv } from './services/export'
 import './App.css'
@@ -99,8 +100,8 @@ function AppShell() {
       setQueue(nextQueue)
       setError('')
       setLoading(false)
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Backend connection failed')
+    } catch {
+      setError('Connection interrupted')
       setLoading(false)
     } finally {
       polling.current = false
@@ -146,13 +147,13 @@ function AppShell() {
       await refresh()
       setError('')
       if (success) {
-        setNotice(success)
+        setNotice(t(success))
         window.clearTimeout(noticeTimer.current)
         noticeTimer.current = window.setTimeout(() => setNotice(''), 2800)
       }
       return true
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The requested action failed')
+    } catch {
+      setError('Action failed')
       return false
     } finally {
       setBusyAction('')
@@ -190,10 +191,10 @@ function AppShell() {
   const loadAndStart = (scenario: string) => runAction('scenario', async () => {
     await api.loadScenario(scenario)
     await api.control('start')
-  }, (scenarioLabels[scenario] ?? 'Scenario') + ' started')
+  }, t(scenarioLabels[scenario] ?? 'Scenario') + ' ' + t('started'))
 
   return (
-    <div className="app-shell">
+    <LocalizedMarkup language={language}><div className="app-shell">
       <aside className="sidebar">
         <a className="brand" href="/dashboard" onClick={(event) => { event.preventDefault(); jumpTo(navigation[0]) }}>
           <span className="brand-mark"><TowerControl size={19} strokeWidth={1.8} /></span>
@@ -251,8 +252,8 @@ function AppShell() {
 
         {error && (
           <div className="connection-banner" role="alert">
-            <AlertTriangle size={16} /><span>{error}</span>
-            <button type="button" onClick={() => { setError(''); void refresh() }}>Retry connection</button>
+            <AlertTriangle size={16} /><span><strong>{t('Connection interrupted')}</strong><small>{t('The simulation API is unavailable. Check that the C++ service is running.')}</small></span>
+            <button type="button" onClick={() => { setError(''); void refresh() }}>{t('Retry connection')}</button>
           </div>
         )}
 
@@ -260,13 +261,13 @@ function AppShell() {
           {dashboard && <>
           <section className="page-heading">
             <div>
-              <div className="eyebrow"><span className="signal-dot" /> AIR TRAFFIC MANAGEMENT <i>/</i> {titleCase(simulation.scenario).toUpperCase()}</div>
+              <div className="eyebrow"><span className="signal-dot" /> {t('Air traffic management')} <i>/</i> {t(scenarioLabels[simulation.scenario] ?? titleCase(simulation.scenario)).toUpperCase()}</div>
               <h1>{t('Operations overview')}</h1>
-              <p>Live runway status, flight sequencing and operational performance.</p>
+              <p>{t('Live runway status, flight sequencing and operational performance.')}</p>
             </div>
             <div className="primary-controls" aria-label="Simulation controls">
               <button type="button" className="button quiet-button" disabled={!!busyAction} onClick={() => void runAction('step', () => api.control('step'), 'Advanced one simulation minute')}>
-                <StepForward size={15} /> Step
+                <StepForward size={15} /> {t('Step')}
               </button>
               <button
                 type="button"
@@ -275,34 +276,34 @@ function AppShell() {
                 onClick={() => void runAction('simulation', () => api.control(simulation.running ? 'pause' : simulation.time > 0 ? 'resume' : 'start'), simulation.running ? 'Simulation paused' : simulation.time > 0 ? 'Simulation resumed' : 'Simulation started')}
               >
                 {busyAction === 'simulation' ? <span className="button-spinner" /> : simulation.running ? <span className="pause-mark">в…Ў</span> : <Play size={14} fill="currentColor" />}
-                {busyAction === 'simulation' ? 'Updating…' : simulation.running ? 'Pause simulation' : simulation.time > 0 ? 'Resume simulation' : 'Start simulation'}
+                {busyAction === 'simulation' ? t('Updating…') : t(simulation.running ? 'Pause simulation' : simulation.time > 0 ? 'Resume simulation' : 'Start simulation')}
               </button>
             </div>
           </section>
           </>}
 
           {dashboard && <section className="metric-grid" aria-label="Live operational metrics">
-            <MetricCard icon={<Plane />} label={t('Runway movement')} value={simulation.activeFlights} hint={activeFlight ? activeFlight.number + ' · ' + titleCase(activeFlight.operation) : 'No active operation'} tone="cyan" />
-            <MetricCard icon={<Clock3 />} label={t('Waiting in queue')} value={simulation.waitingFlights} hint={'Peak queue ' + simulation.statistics.maxQueueLength} tone="amber" />
-            <MetricCard icon={<Check />} label="COMPLETED" value={simulation.completedFlights} hint={simulation.statistics.totalGenerated + ' flights generated'} tone="green" />
-            <MetricCard icon={<Activity />} label={t('Average queue wait')} value={simulation.statistics.averageWait.toFixed(1) + ' min'} hint={'Maximum current wait ' + simulation.statistics.maxWait + ' min'} tone="blue" />
-            <MetricCard icon={<Gauge />} label={t('Runway utilization')} value={simulation.statistics.runwayUtilization.toFixed(1) + '%'} hint="Service time / elapsed time" tone="violet" />
-            <MetricCard icon={<ShieldAlert />} label="PRIORITY WATCH" value={simulation.emergencyCount} hint={simulation.statistics.emergencyHandled + ' emergencies handled'} tone="red" />
+            <MetricCard icon={<Plane />} label={t('Runway movement')} value={simulation.activeFlights} hint={activeFlight ? activeFlight.number + ' · ' + t(titleCase(activeFlight.operation)) : t('No active operation')} tone="cyan" />
+            <MetricCard icon={<Clock3 />} label={t('Waiting in queue')} value={simulation.waitingFlights} hint={t('Peak queue') + ' ' + simulation.statistics.maxQueueLength} tone="amber" />
+            <MetricCard icon={<Check />} label={t('Completed')} value={simulation.completedFlights} hint={simulation.statistics.totalGenerated + ' ' + t('Flights generated').toLowerCase()} tone="green" />
+            <MetricCard icon={<Activity />} label={t('Average queue wait')} value={simulation.statistics.averageWait.toFixed(1) + ' ' + t('min')} hint={t('Maximum current wait') + ' ' + simulation.statistics.maxWait + ' ' + t('min')} tone="blue" />
+            <MetricCard icon={<Gauge />} label={t('Runway utilization')} value={simulation.statistics.runwayUtilization.toFixed(1) + '%'} hint={t('Service time / elapsed time')} tone="violet" />
+            <MetricCard icon={<ShieldAlert />} label={t('Priority watch')} value={simulation.emergencyCount} hint={simulation.statistics.emergencyHandled + ' ' + t('Emergency flights handled').toLowerCase()} tone="red" />
           </section>}
 
-          {activeNav === 'airport' && <header className="route-heading"><span className="section-kicker">SKYLINE ATC / SURFACE</span><h1>{t('Live airport surface')}</h1><p>Aircraft state and service progress are synchronized to backend simulation ticks.</p></header>}
-          {activeNav === 'events' && <header className="route-heading"><span className="section-kicker">SKYLINE ATC / AUDIT TRAIL</span><h1>{t('Event history')}</h1><p>Timestamped events reported by the simulation engine.</p></header>}
+          {activeNav === 'airport' && <header className="route-heading"><span className="section-kicker">SKYLINE ATC / {t('Airport surface').toUpperCase()}</span><h1>{t('Live airport surface')}</h1><p>{t('Aircraft state and service progress are synchronized to backend simulation ticks.')}</p></header>}
+          {activeNav === 'events' && <header className="route-heading"><span className="section-kicker">SKYLINE ATC / {t('Event history').toUpperCase()}</span><h1>{t('Event history')}</h1><p>{t('Timestamped events reported by the simulation engine.')}</p></header>}
           {(dashboard || activeNav === 'airport') && <section className={'operations-grid' + (dashboard ? '' : ' airport-route-grid')}>
             <div className="panel airfield-panel" id="airport">
               <div className="panel-heading">
                 <div><span className="section-kicker">{t('Live airfield').toUpperCase()}</span><h2>{t('Airport surface')}</h2></div>
                 <div className={'runway-indicator ' + (simulation.runway === 'FREE' ? 'is-free' : 'is-active')}>
                   <span className="runway-lamp" />
-                  <span><strong>{simulation.runway === 'FREE' ? 'RUNWAY AVAILABLE' : titleCase(simulation.runway.replace('OCCUPIED_', '').replace('_', ' '))}</strong><small>{activeFlight ? activeFlight.number + ' · ' + activeFlight.operation.toUpperCase() : 'Runway A / B'}</small></span>
+                  <span><strong>{simulation.runway === 'FREE' ? t('Runway available') : t(titleCase(simulation.runway.replace('OCCUPIED_', '').replace('_', ' ')))}</strong><small>{activeFlight ? activeFlight.number + ' · ' + t(titleCase(activeFlight.operation)) : t('Runway A / B')}</small></span>
                 </div>
                 <div className="live-label"><span className="signal-dot" /> LIVE</div>
               </div>
-              <AirportMap flights={flights} simulationTime={simulation.time} runway={simulation.runway} loading={loading} />
+              <AirportMap flights={flights} simulationTime={simulation.time} runway={simulation.runway} loading={loading} language={language} />
             </div>
 
             {dashboard && <div className="panel queue-panel" id="queue">
@@ -318,7 +319,7 @@ function AppShell() {
                 ))}
               </div>
               <div className="flight-list" aria-live="polite">
-                {visibleQueue.slice(0, 7).map((flight) => <FlightRow key={flight.id} flight={flight} time={simulation.time} />)}
+                {visibleQueue.slice(0, 7).map((flight) => <FlightRow key={flight.id} flight={flight} time={simulation.time} language={language} />)}
                 {visibleQueue.length === 0 && <div className="empty-state">{loading ? 'Loading flight data…' : 'No flights in this queue filter.'}</div>}
               </div>
               <div className="queue-foot"><span>Showing {Math.min(visibleQueue.length, 7)} of {visibleQueue.length} waiting flights</span><span>FIFO + priority aging</span></div>
@@ -333,7 +334,7 @@ function AppShell() {
                 <span className={'state-badge ' + (emergencies.length ? 'critical' : 'clear')}><span className="signal-dot" />{emergencies.length ? emergencies.length + ' ACTIVE' : 'ALL CLEAR'}</span>
               </div>
               <div className="emergency-list">
-                {emergencies.slice(0, 4).map((flight) => <EmergencyRow key={flight.id} flight={flight} />)}
+                {emergencies.slice(0, 4).map((flight) => <EmergencyRow key={flight.id} flight={flight} language={language} />)}
                 {emergencies.length === 0 && <div className="calm-state"><ShieldAlert size={19} /><span>No active emergencies. Priority monitoring is on.</span></div>}
               </div>
               <div className="policy-note"><ShieldAlert size={15} /><span><strong>Dispatch policy</strong> · Critical arrivals first; then emergency arrivals by least endurance, emergency departures by severity, and aged normal traffic.</span></div>
@@ -403,7 +404,7 @@ function AppShell() {
               {activeNav === 'events' && <button className="button quiet-button" onClick={()=>downloadCsv('skyline-events.csv',visibleEvents.map(event=>({time:event.time,type:event.type,severity:event.severity,flightId:event.flightId,description:event.description})))}>Export CSV</button>}
               <span className="live-small">{visibleEvents.length} RECORDS</span>
             </div>
-            <EventTable events={visibleEvents.slice(0, activeNav === 'events' ? 100 : 10)} allEvents={events.length} loading={loading} />
+            <EventTable events={visibleEvents.slice(0, activeNav === 'events' ? 100 : 10)} allEvents={events.length} loading={loading} language={language} />
           </section>
           }
 
@@ -411,7 +412,7 @@ function AppShell() {
             page={activeNav} flights={flights} queue={queue} events={events} comparison={comparison} experiment={experiment} simulation={simulation}
             language={language} theme={theme} busy={!!busyAction} generator={generator}
             setLanguage={setLanguage} setTheme={setTheme} onAddFlight={() => setShowFlightForm(true)} onSettings={() => setShowGenerator(true)}
-            onEmergency={(flight,severity)=>{if(window.confirm(`Declare emergency for ${flight.number} at severity ${severity}?`))void runAction('emergency',()=>api.declareEmergency(flight.id,severity),`Emergency declared for ${flight.number}`)}}
+            onEmergency={(flight,severity)=>{if(window.confirm(t('Declare emergency')+' '+flight.number+' · '+t('Severity')+' '+severity+'?'))void runAction('emergency',()=>api.declareEmergency(flight.id,severity),t('Emergency declared')+': '+flight.number)}}
             onScenario={(scenario) => void loadAndStart(scenario)} onCompare={() => void compareScenarios()}
             onExperiment={(config) => void runAction('experiment', async () => setExperiment(await api.experiment(config)), 'Custom experiment complete')}
             onSpeed={(speed) => void runAction('speed', () => api.speed(speed), 'Speed updated')}
@@ -435,6 +436,7 @@ function AppShell() {
       {notice && <div className="toast" role="status" aria-live="polite"><Check size={15} />{notice}</div>}
       {showFlightForm && (
         <FlightModal
+          language={language}
           busy={busyAction === 'flight'}
           onClose={() => setShowFlightForm(false)}
           onSave={async (form) => {
@@ -446,6 +448,7 @@ function AppShell() {
       )}
       {showGenerator && (
         <GeneratorModal
+          language={language}
           config={generator}
           busy={busyAction === 'generator'}
           onClose={() => setShowGenerator(false)}
@@ -453,15 +456,16 @@ function AppShell() {
           onSave={async (next) => runAction('generator', async () => setGenerator(await api.configureGenerator(next)), 'Generator settings saved')}
         />
       )}
-      {showCommand && <CommandPalette query={commandQuery} setQuery={setCommandQuery} onClose={() => {setShowCommand(false);setCommandQuery('')}} onRoute={(item) => {setShowCommand(false);setCommandQuery('');jumpTo(item)}} onAction={(action) => {setShowCommand(false);setCommandQuery('');if(action==='flight')setShowFlightForm(true);else if(action==='settings')setShowGenerator(true);else if(action==='step')void runAction('step',()=>api.control('step'),'Advanced one tick');else if(action==='reset')void runAction('reset',()=>api.control('reset'),'Simulation reset');else void runAction('simulation',()=>api.control(simulation.running?'pause':simulation.time>0?'resume':'start'),'Simulation control updated')}} />}
-    </div>
+      {showCommand && <CommandPalette language={language} query={commandQuery} setQuery={setCommandQuery} onClose={() => {setShowCommand(false);setCommandQuery('')}} onRoute={(item) => {setShowCommand(false);setCommandQuery('');jumpTo(item)}} onAction={(action) => {setShowCommand(false);setCommandQuery('');if(action==='flight')setShowFlightForm(true);else if(action==='settings')setShowGenerator(true);else if(action==='step')void runAction('step',()=>api.control('step'),'Advanced one tick');else if(action==='reset')void runAction('reset',()=>api.control('reset'),'Simulation reset');else void runAction('simulation',()=>api.control(simulation.running?'pause':simulation.time>0?'resume':'start'),'Simulation control updated')}} />}
+    </div></LocalizedMarkup>
   )
 }
 
-function CommandPalette({query,setQuery,onClose,onRoute,onAction}:{query:string;setQuery:(q:string)=>void;onClose:()=>void;onRoute:(item:typeof navigation[number])=>void;onAction:(action:string)=>void}){
-  const routes=navigation.filter(item=>item.label.toLowerCase().includes(query.toLowerCase()))
-  const commands=[{id:'simulation',label:'Start / pause simulation'},{id:'step',label:'Advance one simulation tick'},{id:'flight',label:'Create a flight'},{id:'settings',label:'Open traffic generator settings'},{id:'reset',label:'Reset current simulation'}].filter(item=>item.label.toLowerCase().includes(query.toLowerCase()))
-  return <div className="command-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget)onClose()}}><section className="command-palette" role="dialog" aria-modal="true" aria-label="Quick navigation"><div className="command-search"><Search size={17}/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search pages and actions…" onKeyDown={event=>{if(event.key==='Escape')onClose();if(event.key==='Enter'&&routes[0])onRoute(routes[0])}}/><kbd>ESC</kbd></div><div className="command-section"><span>WORKSPACES</span>{routes.map(item=><button type="button" key={item.id} onClick={()=>onRoute(item)}><item.icon size={15}/>{item.label}<kbd>↵</kbd></button>)}{!routes.length&&<small>No matching pages</small>}</div><div className="command-section"><span>SIMULATION ACTIONS</span>{commands.map(item=><button type="button" key={item.id} onClick={()=>onAction(item.id)}><span className="command-dot"/>{item.label}<kbd>↵</kbd></button>)}</div></section></div>
+function CommandPalette({language,query,setQuery,onClose,onRoute,onAction}:{language:Language;query:string;setQuery:(q:string)=>void;onClose:()=>void;onRoute:(item:typeof navigation[number])=>void;onAction:(action:string)=>void}){
+  const t=(key:string)=>translate(language,key)
+  const routes=navigation.filter(item=>t(item.label).toLowerCase().includes(query.toLowerCase()))
+  const commands=[{id:'simulation',label:'Start / pause simulation'},{id:'step',label:'Advance one simulation tick'},{id:'flight',label:'Create a flight'},{id:'settings',label:'Open traffic generator settings'},{id:'reset',label:'Reset current simulation'}].filter(item=>t(item.label).toLowerCase().includes(query.toLowerCase()))
+  return <LocalizedMarkup language={language}><div className="command-backdrop" onMouseDown={event=>{if(event.target===event.currentTarget)onClose()}}><section className="command-palette" role="dialog" aria-modal="true" aria-label={t('Quick navigation')}><div className="command-search"><Search size={17}/><input autoFocus value={query} onChange={event=>setQuery(event.target.value)} placeholder={t('Search pages and actions…')} onKeyDown={event=>{if(event.key==='Escape')onClose();if(event.key==='Enter'&&routes[0])onRoute(routes[0])}}/><kbd>ESC</kbd></div><div className="command-section"><span>WORKSPACES</span>{routes.map(item=><button type="button" key={item.id} onClick={()=>onRoute(item)}><item.icon size={15}/>{t(item.label)}<kbd>↵</kbd></button>)}{!routes.length&&<small>No matching pages</small>}</div><div className="command-section"><span>SIMULATION ACTIONS</span>{commands.map(item=><button type="button" key={item.id} onClick={()=>onAction(item.id)}><span className="command-dot"/>{t(item.label)}<kbd>↵</kbd></button>)}</div></section></div></LocalizedMarkup>
 }
 
 function MetricCard({ icon, label, value, hint, tone }: { icon: React.ReactNode; label: string; value: string | number; hint: string; tone: string }) {
@@ -473,29 +477,29 @@ function MetricCard({ icon, label, value, hint, tone }: { icon: React.ReactNode;
   )
 }
 
-function FlightRow({ flight, time }: { flight: Flight; time: number }) {
+function FlightRow({ flight, time, language }: { flight: Flight; time: number; language: Language }) {
   const isEmergency = flight.emergency
   const wait = flight.queueEntered >= 0 ? queueWait(flight, time) : 0
   const priority = isEmergency ? 'P' + String(4 - flight.severity) : 'NORMAL'
   return (
-    <article className={'flight-row' + (isEmergency ? ' urgent-row' : '')}>
+    <LocalizedMarkup language={language}><article className={'flight-row' + (isEmergency ? ' urgent-row' : '')}>
       <span className={'operation-icon ' + flight.operation}>{flight.operation === 'arrival' ? <ArrowDownLeft size={14} /> : <ArrowUpRight size={14} />}</span>
       <span className="flight-main"><strong>{flight.number}{isEmergency && <em>EMERGENCY</em>}</strong><small>{flight.airline} · {flight.aircraft}</small></span>
       <span className="fuel-cell"><strong className={flight.fuel <= 15 ? 'fuel-critical' : ''}>{Math.floor(flight.fuel)}%</strong><small>FUEL</small></span>
       <span className="priority-cell"><b className={isEmergency ? 'priority-emergency' : ''}>{priority}</b><small>{titleCase(flight.status)}</small></span>
       <span className="wait-cell">{wait}<small>MIN</small></span>
-    </article>
+    </article></LocalizedMarkup>
   )
 }
 
-function EmergencyRow({ flight }: { flight: Flight }) {
+function EmergencyRow({ flight, language }: { flight: Flight; language: Language }) {
   const fuelWidth = Math.max(0, Math.min(100, flight.fuel))
   return (
-    <div className="emergency-row">
+    <LocalizedMarkup language={language}><div className="emergency-row">
       <span className="emergency-symbol"><AlertTriangle size={15} /></span>
       <span className="emergency-copy"><strong>{flight.number}<small>{flight.aircraft}</small></strong><span>{titleCase(flight.operation)} · Severity {flight.severity}</span></span>
       <span className="fuel-gauge"><span><small>FUEL</small><b>{Math.floor(flight.fuel)}%</b></span><i><b style={{ width: fuelWidth + '%' }} /></i></span>
-    </div>
+    </div></LocalizedMarkup>
   )
 }
 
@@ -503,21 +507,22 @@ function StatRow({ label, value, alert = false }: { label: string; value: string
   return <div className="stat-row"><span>{label}</span><strong className={alert ? 'stat-alert' : ''}>{value}</strong></div>
 }
 
-function EventTable({ events, allEvents, loading }: { events: Event[]; allEvents: number; loading: boolean }) {
-  if (!events.length) return <div className="empty-state event-empty">{loading ? 'Loading event records…' : allEvents ? 'No events match this severity.' : 'No events have been recorded yet.'}</div>
+function EventTable({ events, allEvents, loading, language }: { events: Event[]; allEvents: number; loading: boolean; language: Language }) {
+  if (!events.length) return <LocalizedMarkup language={language}><div className="empty-state event-empty">{loading ? 'Loading event records…' : allEvents ? 'No events match this severity.' : 'No events have been recorded yet.'}</div></LocalizedMarkup>
   return (
-    <div className="event-table">
+    <LocalizedMarkup language={language}><div className="event-table">
       <div className="event-header"><span>SIM TIME</span><span>EVENT</span><span>FLIGHT</span><span>DESCRIPTION</span><span>SEVERITY</span></div>
       {events.map((event, index) => (
         <div className="event-row" key={event.time + event.flightId + event.type + index}>
           <span>{formatSimTime(event.time)}</span><span>{titleCase(event.type)}</span><span>{event.flightId || '—'}</span><span>{event.description}</span><b className={'severity ' + event.severity}>{event.severity}</b>
         </div>
       ))}
-    </div>
+    </div></LocalizedMarkup>
   )
 }
 
-function FlightModal({ busy, onClose, onSave }: {
+function FlightModal({ language, busy, onClose, onSave }: {
+  language: Language
   busy: boolean
   onClose: () => void
   onSave: (flight: { operation: string; number: string; aircraft: string; fuel: number; emergency: boolean; severity: number }) => Promise<boolean>
@@ -529,7 +534,7 @@ function FlightModal({ busy, onClose, onSave }: {
   const [emergency, setEmergency] = useState(false)
   const [severity, setSeverity] = useState(2)
   return (
-    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
+    <LocalizedMarkup language={language}><div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
       <form className="modal-card" onSubmit={async (event) => {
         event.preventDefault()
         await onSave({ number: number.trim().toUpperCase(), operation, aircraft, fuel, emergency, severity })
@@ -545,11 +550,12 @@ function FlightModal({ busy, onClose, onSave }: {
         {emergency && <label>Emergency severity<select value={severity} onChange={(event) => setSeverity(Number(event.target.value))}><option value="1">1 · Low</option><option value="2">2 · High</option><option value="3">3 · Critical</option></select></label>}
         <div className="modal-actions"><button type="button" className="button quiet-button" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className="button primary-button" disabled={busy}>{busy ? <span className="button-spinner" /> : <Plus size={15} />}{busy ? 'Adding flight…' : 'Add to queue'}</button></div>
       </form>
-    </div>
+    </div></LocalizedMarkup>
   )
 }
 
-function GeneratorModal({ config, busy, onClose, onGenerate, onSave }: {
+function GeneratorModal({ language, config, busy, onClose, onGenerate, onSave }: {
+  language: Language
   config: GeneratorConfig
   busy: boolean
   onClose: () => void
@@ -559,7 +565,7 @@ function GeneratorModal({ config, busy, onClose, onGenerate, onSave }: {
   const [draft, setDraft] = useState(config)
   const edit = (patch: Partial<GeneratorConfig>) => setDraft((previous) => ({ ...previous, ...patch }))
   return (
-    <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
+    <LocalizedMarkup language={language}><div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}>
       <form className="modal-card" onSubmit={async (event) => { event.preventDefault(); await onSave(draft) }}>
         <div className="modal-heading"><div><span className="section-kicker">TRAFFIC CONFIGURATION</span><h2>Flight generator</h2></div><button type="button" className="icon-button" aria-label="Close generator settings" onClick={onClose}><X size={17} /></button></div>
         <label className="checkbox-label"><input type="checkbox" checked={draft.enabled} onChange={(event) => edit({ enabled: event.target.checked })} /> Enable automatic flight generation</label>
@@ -582,7 +588,7 @@ function GeneratorModal({ config, busy, onClose, onGenerate, onSave }: {
         <label>Runway clearing (ticks)<input type="number" min="1" max="5" value={draft.clearingDuration} onChange={(event) => edit({ clearingDuration: Number(event.target.value) })} /></label>
         <div className="modal-actions split-actions"><button type="button" className="button quiet-button" disabled={busy} onClick={() => void onGenerate()}><Radio size={14} /> Generate one flight</button><button type="submit" className="button primary-button" disabled={busy}>{busy ? <span className="button-spinner" /> : <Check size={14} />}{busy ? 'Saving…' : 'Apply settings'}</button></div>
       </form>
-    </div>
+    </div></LocalizedMarkup>
   )
 }
 

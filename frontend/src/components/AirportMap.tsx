@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Eye, Maximize2, Minimize2, Minus, Moon, Plus, Scan, Sun, Wind } from 'lucide-react'
 import type { Flight } from '../types'
+import { translate, type Language } from '../i18n'
+import LocalizedMarkup from './LocalizedMarkup'
 
 type Point = { x: number; y: number; heading: number; progress: number }
 const isActive = (status: string) => status === 'landing' || status === 'taking_off'
@@ -9,11 +11,12 @@ const safeProgress = (flight: Flight, time: number) => {
   return Math.max(0, Math.min(1, (time - flight.serviceStart) / duration))
 }
 
-export default function AirportMap({ flights, simulationTime, runway, loading }: {
+export default function AirportMap({ flights, simulationTime, runway, loading, language }: {
   flights: Flight[]
   simulationTime: number
   runway: string
   loading: boolean
+  language: Language
 }) {
   const [selectedId, setSelectedId] = useState('')
   const [zoom, setZoom] = useState(1)
@@ -24,6 +27,7 @@ export default function AirportMap({ flights, simulationTime, runway, loading }:
   const [showLights, setShowLights] = useState(true)
   const [daylight, setDaylight] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
+  const t = (key: string) => translate(language, key)
   const drag = useRef<{x:number;y:number;originX:number;originY:number}|null>(null)
   const canvas = useRef<HTMLDivElement>(null)
   const svg = useRef<SVGSVGElement>(null)
@@ -54,7 +58,7 @@ export default function AirportMap({ flights, simulationTime, runway, loading }:
   }
 
   return (
-    <div className={'airport-visual'+(daylight?' daylight':'')}>
+    <LocalizedMarkup language={language}><div className={'airport-visual'+(daylight?' daylight':'')}>
       <div className="airfield-meta">
         <span><Wind size={12} /> SIMULATION AIRFIELD <i>·</i> LIVE SURFACE</span>
         <span>SIM TICK {String(simulationTime).padStart(3, '0')} <i>·</i> {liveFlights.length} AIRCRAFT TRACKED</span>
@@ -111,8 +115,8 @@ export default function AirportMap({ flights, simulationTime, runway, loading }:
             <path d="M318 210h7m-7 8h7m-7 8h7m-7 8h7m-7 8h7M734 210h7m-7 8h7m-7 8h7m-7 8h7m-7 8h7" className="runway-edge-mark" />
             <text x="328" y="187" className="runway-designator">A</text>
             <text x="714" y="187" className="runway-designator">B</text>
-            <text x="454" y="216" className="runway-caption">SINGLE ACTIVE RUNWAY</text>
-            <text x="486" y="242" className="runway-length">SINGLE ACTIVE SURFACE</text>
+            <text x="454" y="216" className="runway-caption">{t('Single active runway')}</text>
+            <text x="486" y="242" className="runway-length">{t('Single active surface')}</text>
           </g>
 
           {showZones && <g className="holding-area">
@@ -120,17 +124,17 @@ export default function AirportMap({ flights, simulationTime, runway, loading }:
             <path d="M185 306v-7m22 7v-7m22 7v-7m22 7v-7m22 7v-7m22 7v-7" className="holding-ticks" />
             <text x="174" y="329">DEPARTURE HOLD · A</text>
             <path d="M72 123c46-41 117-41 159 0m-159 0c43 39 116 39 159 0" className="approach-pattern" />
-            <text x="46" y="77">FINAL APPROACH</text><text x="73" y="141">HOLDING FIX · A</text>
+            <text x="46" y="77">{t('Final approach')}</text><text x="73" y="141">{t('Holding fix · A')}</text>
           </g>}
 
           {showZones && <g className="map-labels">
-            <text x="47" y="380">TAXIWAY A</text><text x="785" y="316">TAXIWAY B</text>
-            <text x="835" y="165">APRON 1</text>
+            <text x="47" y="380">{t('Taxiway A')}</text><text x="785" y="316">{t('Taxiway B')}</text>
+            <text x="835" y="165">{t('Apron 1')}</text>
             <path d="M43 360h912" className="sector-line" />
           </g>}
 
           {active.length > 1 && (
-            <g className="safety-warning"><rect x="386" y="267" width="282" height="29" rx="5" /><text x="527" y="286">RUNWAY OCCUPANCY SAFETY CHECK</text></g>
+            <g className="safety-warning"><rect x="386" y="267" width="282" height="29" rx="5" /><text x="527" y="286">{t('Runway occupancy safety check')}</text></g>
           )}
 
           {sorted.map((flight) => {
@@ -170,41 +174,41 @@ export default function AirportMap({ flights, simulationTime, runway, loading }:
           {loading && <text x="500" y="414" textAnchor="middle" className="map-empty">Connecting to simulation telemetry…</text>}
         </svg>
         <div className="map-controls" role="group" aria-label="Airfield map zoom">
-          <button type="button" aria-label="Zoom out" title="Zoom out" disabled={zoom <= 1} onClick={() => setZoom((value) => Math.max(1, Number((value - .15).toFixed(2))))}><Minus size={14} /></button>
+          <button type="button" aria-label={t('Zoom out')} title={t('Zoom out')} disabled={zoom <= 1} onClick={() => setZoom((value) => Math.max(1, Number((value - .15).toFixed(2))))}><Minus size={14} /></button>
           <span>{Math.round(zoom * 100)}%</span>
-          <button type="button" aria-label="Zoom in" title="Zoom in" disabled={zoom >= 1.45} onClick={() => setZoom((value) => Math.min(1.45, Number((value + .15).toFixed(2))))}><Plus size={14} /></button>
-          <button type="button" aria-label="Fit airport" title="Fit airport" onClick={() => {setZoom(1);setOrigin({x:0,y:0})}}><Scan size={13} /></button>
+          <button type="button" aria-label={t('Zoom in')} title={t('Zoom in')} disabled={zoom >= 1.45} onClick={() => setZoom((value) => Math.min(1.45, Number((value + .15).toFixed(2))))}><Plus size={14} /></button>
+          <button type="button" aria-label={t('Fit airport')} title={t('Fit airport')} onClick={() => {setZoom(1);setOrigin({x:0,y:0})}}><Scan size={13} /></button>
           <button type="button" aria-label={fullscreen?'Exit fullscreen':'Fullscreen'} title={fullscreen?'Exit fullscreen':'Fullscreen'} onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen();else void canvas.current?.requestFullscreen()}}>{fullscreen?<Minimize2 size={13}/>:<Maximize2 size={13}/>}</button>
         </div>
       </div>
       <div className="map-layer-controls" role="group" aria-label="Map display layers">
-        <button type="button" aria-pressed={showLabels} onClick={()=>setShowLabels(value=>!value)}><Eye size={12}/> Labels</button>
-        <button type="button" aria-pressed={showPaths} onClick={()=>setShowPaths(value=>!value)}>Flight paths</button>
-        <button type="button" aria-pressed={showZones} onClick={()=>setShowZones(value=>!value)}>Airport zones</button>
-        <button type="button" aria-pressed={showLights} onClick={()=>setShowLights(value=>!value)}>Runway lights</button>
-        <button type="button" aria-pressed={daylight} onClick={()=>setDaylight(value=>!value)}>{daylight?<Moon size={12}/>:<Sun size={12}/>} {daylight?'Night':'Day'}</button>
-        <span>DRAG TO PAN</span>
+        <button type="button" aria-pressed={showLabels} onClick={()=>setShowLabels(value=>!value)}><Eye size={12}/> {t('Labels')}</button>
+        <button type="button" aria-pressed={showPaths} onClick={()=>setShowPaths(value=>!value)}>{t('Flight paths')}</button>
+        <button type="button" aria-pressed={showZones} onClick={()=>setShowZones(value=>!value)}>{t('Airport zones')}</button>
+        <button type="button" aria-pressed={showLights} onClick={()=>setShowLights(value=>!value)}>{t('Runway lights')}</button>
+        <button type="button" aria-pressed={daylight} onClick={()=>setDaylight(value=>!value)}>{daylight?<Moon size={12}/>:<Sun size={12}/>} {t(daylight?'Night':'Day')}</button>
+        <span>{t('Drag to pan')}</span>
       </div>
       <div className="map-legend">
-        <span><i className="legend-arrival" /> ARRIVAL</span><span><i className="legend-departure" /> DEPARTURE</span>
-        <span><i className="legend-emergency" /> EMERGENCY</span><span><i className="legend-runway" /> RUNWAY LIGHTS</span>
-        <span className="map-scale">MOVEMENT IS DRIVEN BY SIMULATION STATE</span>
+        <span><i className="legend-arrival" /> {t('Arrival')}</span><span><i className="legend-departure" /> {t('Departure')}</span>
+        <span><i className="legend-emergency" /> {t('Emergency')}</span><span><i className="legend-runway" /> {t('Runway lights')}</span>
+        <span className="map-scale">{t('Movement is driven by simulation state')}</span>
       </div>
       <div className="map-selection" aria-live="polite">
         {selected ? (
           <>
             <span className={'selected-flight-icon ' + selected.operation}>{selected.operation === 'arrival' ? 'IN' : 'OUT'}</span>
             <span className="selected-flight-main"><strong>{selected.number}</strong><small>{selected.airline} · {selected.aircraft}</small></span>
-            <span className="selected-flight-stat"><small>STATUS</small><strong>{selected.status.replaceAll('_', ' ')}</strong></span>
-            <span className="selected-flight-stat"><small>FUEL</small><strong className={selected.fuel <= 15 ? 'fuel-critical' : ''}>{Math.floor(selected.fuel)}%</strong></span>
-            <span className="selected-flight-stat"><small>QUEUE WAIT</small><strong>{Math.max(0, (selected.serviceStart >= 0 ? selected.serviceStart : simulationTime) - selected.queueEntered)} MIN</strong></span>
+            <span className="selected-flight-stat"><small>{t('Status')}</small><strong>{t(selected.status.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase()))}</strong></span>
+            <span className="selected-flight-stat"><small>{t('Fuel')}</small><strong className={selected.fuel <= 15 ? 'fuel-critical' : ''}>{Math.floor(selected.fuel)}%</strong></span>
+            <span className="selected-flight-stat"><small>{t('Queue wait')}</small><strong>{Math.max(0, (selected.serviceStart >= 0 ? selected.serviceStart : simulationTime) - selected.queueEntered)} {t('min')}</strong></span>
             {selected.emergency && <span className="selected-priority">EMERGENCY · SEVERITY {selected.severity}</span>}
           </>
         ) : (
-          <span className="selection-hint">Select an aircraft to inspect its identifier, status, fuel and queue time.</span>
+          <span className="selection-hint">{t('Select an aircraft to inspect its identifier, status, fuel and queue time.')}</span>
         )}
-        <span className={'map-runway-state ' + (runway === 'FREE' ? 'free' : 'occupied')}>{runway === 'FREE' ? 'RWY FREE' : 'RWY ' + runway.replace('OCCUPIED_', '')}</span>
+        <span className={'map-runway-state ' + (runway === 'FREE' ? 'free' : 'occupied')}>{runway === 'FREE' ? t('Runway free') : t('Occupied') + ' ' + runway.replace('OCCUPIED_', '')}</span>
       </div>
-    </div>
+    </div></LocalizedMarkup>
   )
 }
